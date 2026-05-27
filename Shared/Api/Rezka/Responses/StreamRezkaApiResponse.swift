@@ -34,7 +34,11 @@ private struct StreamData: Codable {
 // MARK: - Seasons
 struct StreamMedia: Codable {
     var bestQualityId: Media.Quality {
-        if let p = p1080u, p.isEmpty == false {
+        if let p = p4k, p.isEmpty == false {
+            .p4k
+        } else if let p = p2k, p.isEmpty == false {
+            .p2k
+        } else if let p = p1080u, p.isEmpty == false {
             .p1080u
         } else if let p = p1080, p.isEmpty == false {
             .p1080
@@ -51,7 +55,11 @@ struct StreamMedia: Codable {
     }
     
     var bestQualityUrl: [String] {
-        if let p = p1080u, p.isEmpty == false {
+        if let p = p4k, p.isEmpty == false {
+            p
+        } else if let p = p2k, p.isEmpty == false {
+            p
+        } else if let p = p1080u, p.isEmpty == false {
             p
         } else if let p = p1080, p.isEmpty == false {
             p
@@ -69,7 +77,7 @@ struct StreamMedia: Codable {
     
     var qualities: [Media.Quality]? {
         var qualities = [Media.Quality]()
-        let list: [Media.Quality] = [.p1080u, .p1080, .p720, .p480, .p360]
+        let list: [Media.Quality] = [.p4k, .p2k, .p1080u, .p1080, .p720, .p480, .p360]
         for q in list {
             if let _ = stream(q) {
                 qualities.append(q)
@@ -79,13 +87,17 @@ struct StreamMedia: Codable {
         return qualities.isEmpty ? nil : qualities
     }
     
+    private let p4k: [String]?
+    private let p2k: [String]?
     private let p1080u: [String]?
     private let p1080: [String]?
     private let p720: [String]?
     private let p480: [String]?
     private let p360: [String]?
     
-    init(p1080u: [String]? = nil, p1080: [String]? = nil, p720: [String]? = nil, p480: [String]? = nil, p360: [String]? = nil) {
+    init(p4k: [String]? = nil, p2k: [String]? = nil, p1080u: [String]? = nil, p1080: [String]? = nil, p720: [String]? = nil, p480: [String]? = nil, p360: [String]? = nil) {
+        self.p4k = p4k
+        self.p2k = p2k
         self.p1080u = p1080u
         self.p1080 = p1080
         self.p720 = p720
@@ -99,6 +111,8 @@ struct StreamMedia: Codable {
 
     func streams(_ quality: Media.Quality) -> [String] {
         switch quality {
+        case .p4k: p4k ?? []
+        case .p2k: p2k ?? []
         case .p1080u: p1080u ?? []
         case .p1080: p1080 ?? []
         case .p720: p720 ?? []
@@ -156,6 +170,8 @@ struct StreamRezkaApiResponse: Decodable {
             cleanedBase64 = cleanedBase64.replacing(trash, with: "")
         }
                 
+        var p4k: [String]?
+        var p2k: [String]?
         var p1080u: [String]?
         var p1080: [String]?
         var p720: [String]?
@@ -167,6 +183,8 @@ struct StreamRezkaApiResponse: Decodable {
         
         for (type, urls) in entries {
             switch type {
+            case .p4k: p4k = urls
+            case .p2k: p2k = urls
             case .p1080u: p1080u = urls
             case .p1080: p1080 = urls
             case .p720: p720 = urls
@@ -176,11 +194,11 @@ struct StreamRezkaApiResponse: Decodable {
             }
         }
         
-        if [p1080u, p1080, p720, p480, p360].allSatisfy({ $0?.isEmpty != false }) {
+        if [p4k, p2k, p1080u, p1080, p720, p480, p360].allSatisfy({ $0?.isEmpty != false }) {
             throw DataError.generate(for: .rezkaConstantsApi, error: .mapping)
         }
         
-        self.streams = StreamMedia(p1080u: p1080u, p1080: p1080, p720: p720, p480: p480, p360: p360)
+        self.streams = StreamMedia(p4k: p4k, p2k: p2k, p1080u: p1080u, p1080: p1080, p720: p720, p480: p480, p360: p360)
     }
 
     private static func decodedPayload(from value: String) -> String {
@@ -256,6 +274,12 @@ struct StreamRezkaApiResponse: Decodable {
 
         let normalized = value.lowercased()
 
+        if normalized.contains("2160") || normalized.contains("4k") || normalized.contains("uhd") {
+            return .p4k
+        }
+        if normalized.contains("1440") || normalized.contains("2k") || normalized.contains("qhd") {
+            return .p2k
+        }
         if normalized.contains("1080") && normalized.contains("ultra") {
             return .p1080u
         }

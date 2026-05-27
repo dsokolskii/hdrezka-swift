@@ -5,6 +5,8 @@ let activityURLKey = "media.url.key"
 
 struct Media {
     enum Quality: String, Codable {
+        case p4k = "4K"
+        case p2k = "2K"
         case p1080u = "1080p Ultra"
         case p1080 = "1080p"
         case p720 = "720p"
@@ -96,6 +98,8 @@ extension Media.Quality: Comparable, Equatable{
         case .p720: 3
         case .p1080: 4
         case .p1080u: 5
+        case .p2k: 6
+        case .p4k: 7
         default: 0
         }
     }
