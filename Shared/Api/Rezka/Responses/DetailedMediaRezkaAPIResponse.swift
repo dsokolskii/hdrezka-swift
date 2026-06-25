@@ -37,7 +37,9 @@ struct DetailedMediaRezkaAPIResponse: Decodable {
         
         let coverElement = try item?.getElementsByClass("b-sidecover").first
         
-        let img: String = (try coverElement?.getElementsByTag("img").first?.attr("src") ?? "")
+        let img = ConstantsApi.secureURLString(
+            from: try coverElement?.getElementsByTag("img").first?.attr("src") ?? ""
+        )
         
         let translation = try DetailedMediaRezkaAPIResponse.translations(in: doc, default: defaultTranslation)
         

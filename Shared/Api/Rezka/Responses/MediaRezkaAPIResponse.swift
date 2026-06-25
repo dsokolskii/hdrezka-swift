@@ -16,7 +16,7 @@ struct MediaRezkaAPIResponse: Decodable {
             
             let aTag = try linkElement?.getElementsByTag("a").first
             
-            let url = try aTag?.attr("href") ?? ""
+            let url = ConstantsApi.secureURLString(from: try aTag?.attr("href") ?? "")
             let title = (try aTag?.text() ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
             
             let desc = (try linkElement?.getElementsByTag("div").last?.text() ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
@@ -97,12 +97,12 @@ struct MediaRezkaAPIResponse: Decodable {
 
     private static func normalize(urlString: String) -> String {
         if urlString.hasPrefix("//") {
-            return "https:\(urlString)"
+            return ConstantsApi.secureURLString(from: urlString)
         }
         if urlString.hasPrefix("/") {
-            return "\(ConstantsApi.server)\(urlString)"
+            return ConstantsApi.secureURLString(from: urlString)
         }
 
-        return urlString
+        return ConstantsApi.secureURLString(from: urlString)
     }
 }

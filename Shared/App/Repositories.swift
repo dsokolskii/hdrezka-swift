@@ -14,7 +14,7 @@ struct RezkaUserProfile: Codable, Equatable {
             return nil
         }
 
-        return URL(string: avatarURLString)
+        return ConstantsApi.secureURL(from: avatarURLString)
     }
 }
 

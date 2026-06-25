@@ -33,6 +33,38 @@ enum ConstantsApi {
         UserDefaults.standard.removeObject(forKey: hostStorageKey)
     }
 
+    static func secureURLString(from value: String) -> String {
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.isEmpty == false else { return "" }
+
+        let lowercased = trimmed.lowercased()
+        if lowercased.hasPrefix("http://") {
+            return "https://" + trimmed.dropFirst("http://".count)
+        }
+
+        if lowercased.hasPrefix("https://") {
+            return trimmed
+        }
+
+        if trimmed.hasPrefix("//") {
+            return "https:\(trimmed)"
+        }
+
+        if trimmed.hasPrefix("/") {
+            return "\(server)\(trimmed)"
+        }
+
+        guard trimmed.contains("://") == false else {
+            return trimmed
+        }
+
+        return "\(server)/\(trimmed.trimmingCharacters(in: CharacterSet(charactersIn: "/")))"
+    }
+
+    static func secureURL(from value: String) -> URL? {
+        URL(string: secureURLString(from: value))
+    }
+
     static func normalizedHost(from value: String) -> String? {
         let trimmed = value
             .trimmingCharacters(in: .whitespacesAndNewlines)
@@ -91,8 +123,18 @@ final class RezkaURLSessionDelegate: NSObject, URLSessionDelegate, URLSessionTas
                     willPerformHTTPRedirection response: HTTPURLResponse,
                     newRequest request: URLRequest,
                     completionHandler: @escaping (URLRequest?) -> Void) {
-        print("RezkaURLSession redirect \(response.statusCode) \(response.url?.absoluteString ?? "nil") -> \(request.url?.absoluteString ?? "nil")")
-        completionHandler(request)
+        var resolvedRequest = request
+        if let url = request.url,
+           url.scheme?.lowercased() == "http",
+           var components = URLComponents(url: url, resolvingAgainstBaseURL: false) {
+            components.scheme = "https"
+            if let secureURL = components.url {
+                resolvedRequest.url = secureURL
+            }
+        }
+
+        print("RezkaURLSession redirect \(response.statusCode) \(response.url?.absoluteString ?? "nil") -> \(resolvedRequest.url?.absoluteString ?? "nil")")
+        completionHandler(resolvedRequest)
     }
 
     private func completeAuthenticationChallenge(_ challenge: URLAuthenticationChallenge,

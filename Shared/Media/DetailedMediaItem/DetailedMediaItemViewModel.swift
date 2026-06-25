@@ -64,7 +64,7 @@ final class DetailedMediaItemViewModel: ObservableObject {
     }
     
     var coverUrl: URL? {
-        URL(string: detailedMedia.coverUrl)
+        ConstantsApi.secureURL(from: detailedMedia.coverUrl)
     }
     
     var info: OrderedDictionary<String, String> {
@@ -173,6 +173,19 @@ final class DetailedMediaItemViewModel: ObservableObject {
         }
 
         return episodes[index + 1].id
+    }
+
+    var nextPlayableEpisode: (season: Int, episode: Int)? {
+        if let currentSeason = historyMedia.season, let nextEpisodeId {
+            return (currentSeason, nextEpisodeId)
+        }
+
+        guard let nextSeasonId,
+              let firstEpisodeId = season?.episodes[nextSeasonId]?.first?.id else {
+            return nil
+        }
+
+        return (nextSeasonId, firstEpisodeId)
     }
 
     var previousEpisodeId: Int? {

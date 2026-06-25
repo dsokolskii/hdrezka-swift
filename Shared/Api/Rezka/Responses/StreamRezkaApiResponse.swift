@@ -308,6 +308,6 @@ struct StreamRezkaApiResponse: Decodable {
             return nil
         }
 
-        return trimmed
+        return ConstantsApi.secureURLString(from: trimmed)
     }
 }

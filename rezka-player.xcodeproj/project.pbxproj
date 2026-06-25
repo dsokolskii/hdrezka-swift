@@ -7,17 +7,45 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		01CEE94EFFC9F8060762626D /* Cache.swift in Sources */ = {isa = PBXBuildFile; fileRef = A598C17A28B2A5670034717C /* Cache.swift */; };
+		0ED5801043F5820C57603241 /* KeysTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = A598C17D28B2A5670034717C /* KeysTracker.swift */; };
+		186DB86C161DAAD29217292A /* SeriesMediaRezkaAPIResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A7419828F8825D00B884F7 /* SeriesMediaRezkaAPIResponse.swift */; };
+		18A1FED2B780C19E68EC47A7 /* RezkaNavigationApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A741CB2902DE8B00B884F7 /* RezkaNavigationApi.swift */; };
+		192F8F7BE3E10DD7731ACD32 /* DetailedMediaRezkaAPIResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A7416E28F73A4200B884F7 /* DetailedMediaRezkaAPIResponse.swift */; };
+		1B7FFD55CDF6C30F2A9A0F98 /* CategoryMedias.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BB8F4928AEB4E30070CC77 /* CategoryMedias.swift */; };
+		24DD6818A9788AF92EB8C0DF /* StreamRezkaApiResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5C22365290551DE002B49D5 /* StreamRezkaApiResponse.swift */; };
 		287960772FA90283006FC3CF /* AppContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 287960752FA90283006FC3CF /* AppContainer.swift */; };
 		2879607B2FA90283006FC3CF /* Repositories.swift in Sources */ = {isa = PBXBuildFile; fileRef = 287960792FA90283006FC3CF /* Repositories.swift */; };
 		2879607E2FA90283006FC3CF /* AuthorizationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2879607D2FA90283006FC3CF /* AuthorizationViewModel.swift */; };
 		287960822FA90283006FC3CF /* RezkaAuthorizationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 287960812FA90283006FC3CF /* RezkaAuthorizationService.swift */; };
 		2AA2CEFE37B3D3AF8C293AAF /* TopShelf.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 9A3D7869137E0C84BB566D05 /* TopShelf.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		2FCCB4B369729473F1A4CC61 /* MediaRezkaAPIResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BB8F5228AEB7AB0070CC77 /* MediaRezkaAPIResponse.swift */; };
+		30C0ACB13DA697758505DAD3 /* WatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BE861A2AB0754DEA87ED53C /* WatchApp.swift */; };
+		32FF6E5706A2FBD1F56239AD /* Media.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D2DB328AEB2CD00E98298 /* Media.swift */; };
+		357E9C122C3291F0AA7DDCA6 /* DetailedMedia.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A7416928F738F500B884F7 /* DetailedMedia.swift */; };
+		3E04FE6C9C0C243197D4B124 /* CacheEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = A598C17B28B2A5670034717C /* CacheEntry.swift */; };
+		4050DE67FB14B166719E3002 /* AppContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 287960752FA90283006FC3CF /* AppContainer.swift */; };
+		47B1A78773768ABCBD48671C /* SwiftSoup in Frameworks */ = {isa = PBXBuildFile; productRef = A5DF36E728EC9AC600E0C5C0 /* SwiftSoup */; };
 		4AA43CA72B8D950B003CA4FF /* MediaSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AA43CA42B8D950B003CA4FF /* MediaSettings.swift */; };
 		50C0685DEDD9590D59198AF2 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 33B25DD449EC97CF0BF12E09 /* Foundation.framework */; };
+		5281D5D361772367CA7BD530 /* CaseIterable+Index.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5C2236129053CCC002B49D5 /* CaseIterable+Index.swift */; };
+		5702D7D988C1BAC11DC3A28A /* WatchRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66537E0D42CAD905003E2D03 /* WatchRootView.swift */; };
+		5A0021D80EAF2D39B90274CF /* MediaContentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5DF36DD28EC871B00E0C5C0 /* MediaContentViewModel.swift */; };
+		5C0AF07550AF225B95586CC5 /* ContentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A741E02902F48400B884F7 /* ContentViewModel.swift */; };
+		5C6A74437BE7C1E9E77D025D /* CategoryList.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A741AD2902D86600B884F7 /* CategoryList.swift */; };
+		6A53A3E1F1B930A1D7296785 /* String+Base64.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5C2236929056FBB002B49D5 /* String+Base64.swift */; };
 		6F092EB36BCC29FA0D4E102C /* ContinueWatchingStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1E8AF7C41F297889D9830BA /* ContinueWatchingStore.swift */; };
 		71C07B859C6FDDB3A96F4285 /* ContinueWatchingHistorySync.swift in Sources */ = {isa = PBXBuildFile; fileRef = C25C55DC71E05D7F9572D6B3 /* ContinueWatchingHistorySync.swift */; };
 		72607BA9CF7697D156F530C9 /* TopShelfContentProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFA15C05F17F7A10F096BB3C /* TopShelfContentProvider.swift */; };
 		78DAE1B73CC2438AB8B7E2A1 /* icon-tv.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A5C7590E2959CD6300E8506B /* icon-tv.xcassets */; };
+		7B8AAE8D4D2F4A6CA9EF1A31 /* icon-watch.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7B8AAE8C4D2F4A6CA9EF1A31 /* icon-watch.xcassets */; };
+		851874FDFACB0027DC42ED58 /* ConstantsApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A741D42902E10500B884F7 /* ConstantsApi.swift */; };
+		8FAB551DC767A43F8275DD84 /* OrderedCollections in Frameworks */ = {isa = PBXBuildFile; productRef = A5A7418A28F7FF5B00B884F7 /* OrderedCollections */; };
+		924ED1AB3A9022D6D4F76491 /* DataFetchPhase.swift in Sources */ = {isa = PBXBuildFile; fileRef = A598C17528B2A4A60034717C /* DataFetchPhase.swift */; };
+		971929BCA02F39CDD16F4CD3 /* AuthorizationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2879607D2FA90283006FC3CF /* AuthorizationViewModel.swift */; };
+		9BD2F22CF14FB4E9E7A8CFC0 /* RezkaMediaApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BB8F5628AEB8920070CC77 /* RezkaMediaApi.swift */; };
+		9D471EAB76909E0F95A2EAE1 /* Strings+Filter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A741DC2902EB3E00B884F7 /* Strings+Filter.swift */; };
+		9F4298A693DC73C71AD39D74 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6EF91841F73A259DA0183E18 /* Foundation.framework */; };
 		A50D8FD128ABF5E7008C66AA /* MediaContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A50D8FCE28ABF5E7008C66AA /* MediaContentView.swift */; };
 		A50D8FD628ABF6AC008C66AA /* MediaCategoriesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A50D8FD328ABF6AC008C66AA /* MediaCategoriesViewModel.swift */; };
 		A50D8FDC28ABF7CF008C66AA /* MediaBookmarksViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A50D8FD928ABF7CF008C66AA /* MediaBookmarksViewModel.swift */; };
@@ -76,7 +104,16 @@
 		A5DF36E828EC9AC600E0C5C0 /* SwiftSoup in Frameworks */ = {isa = PBXBuildFile; productRef = A5DF36E728EC9AC600E0C5C0 /* SwiftSoup */; };
 		A5F6AB64291D68DE001D21FA /* MediaSearchContentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5F6AB61291D68DE001D21FA /* MediaSearchContentViewModel.swift */; };
 		A5FEBD7E29D5F77B0008D8D3 /* DetailedHistoryMedia.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5FEBD7B29D5F77B0008D8D3 /* DetailedHistoryMedia.swift */; };
+		A7B84A1531AB6ABF9E36B295 /* RezkaAuthorizationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 287960812FA90283006FC3CF /* RezkaAuthorizationService.swift */; };
+		A8B8745B076C4F0A3C007883 /* ApiConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A741CF2902DEBA00B884F7 /* ApiConstants.swift */; };
+		AA63908C11E5ED3239B8AAEA /* NavigationRezkaApiResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A741D82902E5AA00B884F7 /* NavigationRezkaApiResponse.swift */; };
+		B2DAE682EC909794BE92430B /* CacheImplementation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A598C17C28B2A5670034717C /* CacheImplementation.swift */; };
+		C4134D91A96CCD0728850DD3 /* MediaSearchContentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5F6AB61291D68DE001D21FA /* MediaSearchContentViewModel.swift */; };
+		CA8ECBD12F00AEC19E978A43 /* WatchMediaListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F3B519A27A5F0937B1B60CA /* WatchMediaListView.swift */; };
 		D4811EDABC42E1F01316FA6D /* ContinueWatchingStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1E8AF7C41F297889D9830BA /* ContinueWatchingStore.swift */; };
+		D94ED60B714BFD5B48641541 /* Repositories.swift in Sources */ = {isa = PBXBuildFile; fileRef = 287960792FA90283006FC3CF /* Repositories.swift */; };
+		E7AE68E88EDE533BC5344B99 /* Category.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BB8F4D28AEB5200070CC77 /* Category.swift */; };
+		E8227F064DE7E6434301DB51 /* WatchMediaDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66712C6123133D99AD94B665 /* WatchMediaDetailView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -104,13 +141,20 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		02739CF84CD59382DB25A8FA /* rezka-watch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = "rezka-watch.app"; path = "rezka-watch.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		287960752FA90283006FC3CF /* AppContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppContainer.swift; sourceTree = "<group>"; };
 		287960792FA90283006FC3CF /* Repositories.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Repositories.swift; sourceTree = "<group>"; };
 		2879607D2FA90283006FC3CF /* AuthorizationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthorizationViewModel.swift; sourceTree = "<group>"; };
 		287960812FA90283006FC3CF /* RezkaAuthorizationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RezkaAuthorizationService.swift; sourceTree = "<group>"; };
 		2AD317379BA236032F329520 /* TopShelf.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = TopShelf.entitlements; sourceTree = "<group>"; };
+		2BE861A2AB0754DEA87ED53C /* WatchApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WatchApp.swift; sourceTree = "<group>"; };
 		33B25DD449EC97CF0BF12E09 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		4AA43CA42B8D950B003CA4FF /* MediaSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaSettings.swift; sourceTree = "<group>"; };
+		4F3B519A27A5F0937B1B60CA /* WatchMediaListView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WatchMediaListView.swift; sourceTree = "<group>"; };
+		66537E0D42CAD905003E2D03 /* WatchRootView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WatchRootView.swift; sourceTree = "<group>"; };
+		66712C6123133D99AD94B665 /* WatchMediaDetailView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WatchMediaDetailView.swift; sourceTree = "<group>"; };
+		6EF91841F73A259DA0183E18 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/WatchOS.platform/Developer/SDKs/WatchOS11.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		7B8AAE8C4D2F4A6CA9EF1A31 /* icon-watch.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "icon-watch.xcassets"; sourceTree = "<group>"; };
 		7CBDE8D80EB7BCF73F809182 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9A3D7869137E0C84BB566D05 /* TopShelf.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.extensionkit-extension"; path = TopShelf.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		A505F1CE2E096C390021FDFC /* rezka-player.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "rezka-player.entitlements"; sourceTree = "<group>"; };
@@ -195,6 +239,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		ADFCE68BA1C99A8B09EB03F2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9F4298A693DC73C71AD39D74 /* Foundation.framework in Frameworks */,
+				47B1A78773768ABCBD48671C /* SwiftSoup in Frameworks */,
+				8FAB551DC767A43F8275DD84 /* OrderedCollections in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -202,8 +256,17 @@
 			isa = PBXGroup;
 			children = (
 				6B6691D4B2B6AF699EA38D10 /* tvOS */,
+				0C61A9EC0DD3DA389F44464A /* watchOS */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		0C61A9EC0DD3DA389F44464A /* watchOS */ = {
+			isa = PBXGroup;
+			children = (
+				6EF91841F73A259DA0183E18 /* Foundation.framework */,
+			);
+			name = watchOS;
 			sourceTree = "<group>";
 		};
 		20D032A5E189A97B033F4AA6 /* TopShelf */ = {
@@ -442,6 +505,7 @@
 				A5B79D4228ABF0D5006CAF8E /* tvOS */,
 				A5B79D2728ABEF6A006CAF8E /* Products */,
 				009BAF15BB818A6F2ACBD64A /* Frameworks */,
+				B1D884127BEB5D9166F893A0 /* watchOS */,
 			);
 			sourceTree = "<group>";
 		};
@@ -468,6 +532,7 @@
 			children = (
 				A5B79D4128ABF0D5006CAF8E /* rezka-player.app */,
 				9A3D7869137E0C84BB566D05 /* TopShelf.appex */,
+				02739CF84CD59382DB25A8FA /* rezka-watch.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -491,9 +556,43 @@
 			path = Api;
 			sourceTree = "<group>";
 		};
+		B1D884127BEB5D9166F893A0 /* watchOS */ = {
+			isa = PBXGroup;
+			children = (
+				7B8AAE8C4D2F4A6CA9EF1A31 /* icon-watch.xcassets */,
+				2BE861A2AB0754DEA87ED53C /* WatchApp.swift */,
+				66537E0D42CAD905003E2D03 /* WatchRootView.swift */,
+				4F3B519A27A5F0937B1B60CA /* WatchMediaListView.swift */,
+				66712C6123133D99AD94B665 /* WatchMediaDetailView.swift */,
+			);
+			name = watchOS;
+			path = watchOS;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		805F322251458103C5CE778C /* rezka-watch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BD2723B41ADFDA624262DA0B /* Build configuration list for PBXNativeTarget "rezka-watch" */;
+			buildPhases = (
+				B24E6CECF611454DE573B89A /* Sources */,
+				ADFCE68BA1C99A8B09EB03F2 /* Frameworks */,
+				406AA22871C7307BA76FCC08 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "rezka-watch";
+			packageProductDependencies = (
+				A5DF36E728EC9AC600E0C5C0 /* SwiftSoup */,
+				A5A7418A28F7FF5B00B884F7 /* OrderedCollections */,
+			);
+			productName = "rezka-watch";
+			productReference = 02739CF84CD59382DB25A8FA /* rezka-watch.app */;
+			productType = "com.apple.product-type.application";
+		};
 		A5B79D4028ABF0D5006CAF8E /* rezka-player */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = A5B79D4C28ABF0D6006CAF8E /* Build configuration list for PBXNativeTarget "rezka-player" */;
@@ -568,11 +667,20 @@
 			targets = (
 				A5B79D4028ABF0D5006CAF8E /* rezka-player */,
 				C88BBFE17E1A807F8A32D1B4 /* TopShelf */,
+				805F322251458103C5CE778C /* rezka-watch */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		406AA22871C7307BA76FCC08 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7B8AAE8D4D2F4A6CA9EF1A31 /* icon-watch.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		71DF071B4C9B0D8F14B10ED0 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -661,6 +769,46 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B24E6CECF611454DE573B89A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				30C0ACB13DA697758505DAD3 /* WatchApp.swift in Sources */,
+				5702D7D988C1BAC11DC3A28A /* WatchRootView.swift in Sources */,
+				CA8ECBD12F00AEC19E978A43 /* WatchMediaListView.swift in Sources */,
+				E8227F064DE7E6434301DB51 /* WatchMediaDetailView.swift in Sources */,
+				4050DE67FB14B166719E3002 /* AppContainer.swift in Sources */,
+				D94ED60B714BFD5B48641541 /* Repositories.swift in Sources */,
+				971929BCA02F39CDD16F4CD3 /* AuthorizationViewModel.swift in Sources */,
+				A8B8745B076C4F0A3C007883 /* ApiConstants.swift in Sources */,
+				924ED1AB3A9022D6D4F76491 /* DataFetchPhase.swift in Sources */,
+				851874FDFACB0027DC42ED58 /* ConstantsApi.swift in Sources */,
+				A7B84A1531AB6ABF9E36B295 /* RezkaAuthorizationService.swift in Sources */,
+				9BD2F22CF14FB4E9E7A8CFC0 /* RezkaMediaApi.swift in Sources */,
+				18A1FED2B780C19E68EC47A7 /* RezkaNavigationApi.swift in Sources */,
+				192F8F7BE3E10DD7731ACD32 /* DetailedMediaRezkaAPIResponse.swift in Sources */,
+				2FCCB4B369729473F1A4CC61 /* MediaRezkaAPIResponse.swift in Sources */,
+				AA63908C11E5ED3239B8AAEA /* NavigationRezkaApiResponse.swift in Sources */,
+				186DB86C161DAAD29217292A /* SeriesMediaRezkaAPIResponse.swift in Sources */,
+				24DD6818A9788AF92EB8C0DF /* StreamRezkaApiResponse.swift in Sources */,
+				5C0AF07550AF225B95586CC5 /* ContentViewModel.swift in Sources */,
+				5C6A74437BE7C1E9E77D025D /* CategoryList.swift in Sources */,
+				5281D5D361772367CA7BD530 /* CaseIterable+Index.swift in Sources */,
+				6A53A3E1F1B930A1D7296785 /* String+Base64.swift in Sources */,
+				9D471EAB76909E0F95A2EAE1 /* Strings+Filter.swift in Sources */,
+				357E9C122C3291F0AA7DDCA6 /* DetailedMedia.swift in Sources */,
+				E7AE68E88EDE533BC5344B99 /* Category.swift in Sources */,
+				1B7FFD55CDF6C30F2A9A0F98 /* CategoryMedias.swift in Sources */,
+				5A0021D80EAF2D39B90274CF /* MediaContentViewModel.swift in Sources */,
+				32FF6E5706A2FBD1F56239AD /* Media.swift in Sources */,
+				C4134D91A96CCD0728850DD3 /* MediaSearchContentViewModel.swift in Sources */,
+				01CEE94EFFC9F8060762626D /* Cache.swift in Sources */,
+				3E04FE6C9C0C243197D4B124 /* CacheEntry.swift in Sources */,
+				B2DAE682EC909794BE92430B /* CacheImplementation.swift in Sources */,
+				0ED5801043F5820C57603241 /* KeysTracker.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F02C1B538E6EF0B0080990B4 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -712,6 +860,36 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TVOS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Debug;
+		};
+		97A84DA58C24F22F76F110C6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2HWMDDD4G2;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Rezka;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
+				INFOPLIST_KEY_WKWatchOnly = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.dsoft.rezka-player.watch";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = NO;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
 			};
 			name = Debug;
 		};
@@ -893,6 +1071,37 @@
 			};
 			name = Release;
 		};
+		CB1C48D8E63B0C23F9DAD646 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2HWMDDD4G2;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Rezka;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
+				INFOPLIST_KEY_WKWatchOnly = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.dsoft.rezka-player.watch";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = NO;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				VALIDATE_PRODUCT = YES;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Release;
+		};
 		FB3051A9C13E0328B0FE2E5A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -942,6 +1151,15 @@
 			buildConfigurations = (
 				A5B79D4D28ABF0D6006CAF8E /* Debug */,
 				A5B79D4E28ABF0D6006CAF8E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BD2723B41ADFDA624262DA0B /* Build configuration list for PBXNativeTarget "rezka-watch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CB1C48D8E63B0C23F9DAD646 /* Release */,
+				97A84DA58C24F22F76F110C6 /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

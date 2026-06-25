@@ -48,7 +48,7 @@ enum ContinueWatchingHistorySync {
 
     private static func mapItem(from history: DetailedHistoryMedia) -> ContinueWatchingPayload.Item? {
         let title = history.title.trimmingCharacters(in: .whitespacesAndNewlines)
-        let mediaURL = history.mediaURL.trimmingCharacters(in: .whitespacesAndNewlines)
+        let mediaURL = ConstantsApi.secureURLString(from: history.mediaURL)
         guard title.isEmpty == false, mediaURL.isEmpty == false else {
             return nil
         }
@@ -68,7 +68,7 @@ enum ContinueWatchingHistorySync {
             mediaId: history.mediaId,
             title: title,
             subtitle: subtitle,
-            coverURL: history.coverURL,
+            coverURL: ConstantsApi.secureURLString(from: history.coverURL),
             localCoverPath: nil,
             mediaURL: mediaURL,
             playbackPosition: resumePosition,
@@ -169,8 +169,9 @@ enum ContinueWatchingHistorySync {
                 continue
             }
 
-            guard let remoteURL = URL(string: item.coverURL),
-                  let destinationURL = localCoverURLForRemoteURLString(item.coverURL) else {
+            let secureCoverURL = ConstantsApi.secureURLString(from: item.coverURL)
+            guard let remoteURL = URL(string: secureCoverURL),
+                  let destinationURL = localCoverURLForRemoteURLString(secureCoverURL) else {
                 updatedItems.append(item)
                 continue
             }
@@ -194,7 +195,7 @@ enum ContinueWatchingHistorySync {
                         mediaId: item.mediaId,
                         title: item.title,
                         subtitle: item.subtitle,
-                        coverURL: item.coverURL,
+                        coverURL: secureCoverURL,
                         localCoverPath: destinationURL.path,
                         mediaURL: item.mediaURL,
                         playbackPosition: item.playbackPosition,
@@ -232,7 +233,7 @@ enum ContinueWatchingHistorySync {
     }
 
     private static func localCoverURLForRemoteURLString(_ string: String) -> URL? {
-        let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmed = ConstantsApi.secureURLString(from: string)
         guard trimmed.isEmpty == false else { return nil }
 
         let digest = SHA256.hash(data: Data(trimmed.utf8))

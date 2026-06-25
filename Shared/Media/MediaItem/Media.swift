@@ -4,6 +4,17 @@ let activityTypeViewKey = "com.rezka-player.media.view"
 let activityURLKey = "media.url.key"
 
 struct Media {
+    private enum CodingKeys: String, CodingKey {
+        case title
+        case url
+        case descriptionShort
+        case description
+        case coverUrl
+        case seriesInfo
+        case category
+        case quality
+    }
+
     enum Quality: String, Codable {
         case p4k = "4K"
         case p2k = "2K"
@@ -44,17 +55,54 @@ struct Media {
     let seriesInfo: String?
     let category: Category
     let quality: Quality
+
+    init(
+        title: String,
+        url: String,
+        descriptionShort: String,
+        description: String?,
+        coverUrl: String,
+        seriesInfo: String?,
+        category: Category,
+        quality: Quality
+    ) {
+        self.title = title
+        self.url = ConstantsApi.secureURLString(from: url)
+        self.descriptionShort = descriptionShort
+        self.description = description
+        self.coverUrl = ConstantsApi.secureURLString(from: coverUrl)
+        self.seriesInfo = seriesInfo
+        self.category = category
+        self.quality = quality
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        title = try container.decode(String.self, forKey: .title)
+        url = ConstantsApi.secureURLString(from: try container.decode(String.self, forKey: .url))
+        descriptionShort = try container.decode(String.self, forKey: .descriptionShort)
+        description = try container.decodeIfPresent(String.self, forKey: .description)
+        coverUrl = ConstantsApi.secureURLString(from: try container.decode(String.self, forKey: .coverUrl))
+        seriesInfo = try container.decodeIfPresent(String.self, forKey: .seriesInfo)
+        category = try container.decode(Category.self, forKey: .category)
+        quality = try container.decode(Quality.self, forKey: .quality)
+    }
     
     var descriptionText: String {
         descriptionShort
     }
     
     var mediaURL: URL {
-        URL(string: "\(ConstantsApi.server)/\(uri)")!
+        if let url = ConstantsApi.secureURL(from: url) {
+            return url
+        }
+
+        return URL(string: "\(ConstantsApi.server)/\(uri)")!
     }
     
     var coverURL: URL? {
-        URL(string: coverUrl)
+        ConstantsApi.secureURL(from: coverUrl)
     }
     
     var isSeries: Bool {

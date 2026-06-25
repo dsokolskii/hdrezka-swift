@@ -216,18 +216,6 @@ struct NavigationRezkaApiResponse: Decodable {
             return nil
         }
 
-        if value.hasPrefix("http://") || value.hasPrefix("https://") {
-            return value
-        }
-
-        if value.hasPrefix("//") {
-            return "https:\(value)"
-        }
-
-        guard let baseURL = URL(string: ConstantsApi.server) else {
-            return value
-        }
-
-        return URL(string: value, relativeTo: baseURL)?.absoluteURL.absoluteString ?? value
+        return ConstantsApi.secureURLString(from: value)
     }
 }

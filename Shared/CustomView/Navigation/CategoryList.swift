@@ -94,6 +94,10 @@ class SubCategoryList: ListItemProtocol, Identifiable {
     
     @ViewBuilder
     var detailsView: AnyView {
+#if os(watchOS)
+        AnyView(EmptyView())
+#else
         AnyView(PreviewDetailView(item: self))
+#endif
     }
 }

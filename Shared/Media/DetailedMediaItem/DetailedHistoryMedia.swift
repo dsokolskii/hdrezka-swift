@@ -54,8 +54,8 @@ final class DetailedHistoryMedia: ObservableObject, Codable {
         self.playbackPosition = playbackPosition
         self.playbackDuration = playbackDuration
         self.title = title
-        self.coverURL = coverURL
-        self.mediaURL = mediaURL
+        self.coverURL = ConstantsApi.secureURLString(from: coverURL)
+        self.mediaURL = ConstantsApi.secureURLString(from: mediaURL)
         self.isSeries = isSeries
         self.seasonTitle = seasonTitle
         self.episodeTitle = episodeTitle
@@ -77,8 +77,8 @@ final class DetailedHistoryMedia: ObservableObject, Codable {
         playbackPosition = (try? values.decodeIfPresent(Double.self, forKey: .playbackPosition)) ?? 0
         playbackDuration = (try? values.decodeIfPresent(Double.self, forKey: .playbackDuration)) ?? 0
         title = (try? values.decodeIfPresent(String.self, forKey: .title)) ?? ""
-        coverURL = (try? values.decodeIfPresent(String.self, forKey: .coverURL)) ?? ""
-        mediaURL = (try? values.decodeIfPresent(String.self, forKey: .mediaURL)) ?? ""
+        coverURL = ConstantsApi.secureURLString(from: (try? values.decodeIfPresent(String.self, forKey: .coverURL)) ?? "")
+        mediaURL = ConstantsApi.secureURLString(from: (try? values.decodeIfPresent(String.self, forKey: .mediaURL)) ?? "")
         isSeries = (try? values.decodeIfPresent(Bool.self, forKey: .isSeries)) ?? false
         seasonTitle = (try? values.decodeIfPresent(String.self, forKey: .seasonTitle)) ?? ""
         episodeTitle = (try? values.decodeIfPresent(String.self, forKey: .episodeTitle)) ?? ""

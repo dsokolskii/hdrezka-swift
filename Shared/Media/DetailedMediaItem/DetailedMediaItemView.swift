@@ -873,10 +873,9 @@ private struct PlaybackPlayerView: View {
                     viewModel.persistPlaybackProgress(position: position, duration: duration)
                 },
                 onFinish: {
-                    currentPosition = 0
-                    currentDuration = 0
-                    viewModel.persistPlaybackProgress(position: 0, duration: 0, didFinish: true)
-                    isPresented = false
+                    Task { @MainActor in
+                        await handlePlaybackFinished()
+                    }
                 },
                 onFailure: { message in
                     viewModel.presentPlaybackError(NSError(
@@ -928,7 +927,7 @@ private struct PlaybackPlayerView: View {
             translations: translations,
             qualities: qualities,
             canGoToPreviousEpisode: viewModel.media.isSeries && viewModel.previousEpisodeId != nil,
-            canGoToNextEpisode: viewModel.media.isSeries && viewModel.nextEpisodeId != nil,
+            canGoToNextEpisode: viewModel.media.isSeries && viewModel.nextPlayableEpisode != nil,
             onSelectTranslation: { id in
                 Task {
                     await switchTranslation(id)
@@ -946,13 +945,32 @@ private struct PlaybackPlayerView: View {
             },
             onNextEpisode: {
                 Task {
-                    await switchEpisode(viewModel.nextEpisodeId)
+                    await switchToNextEpisode()
                 }
             }
         )
     }
 
-    private func switchEpisode(_ id: Int?) async {
+    @MainActor
+    private func handlePlaybackFinished() async {
+        currentPosition = 0
+        currentDuration = 0
+        viewModel.persistPlaybackProgress(position: 0, duration: 0, didFinish: true)
+
+        guard viewModel.media.isSeries, viewModel.nextPlayableEpisode != nil else {
+            isPresented = false
+            return
+        }
+
+        await switchToNextEpisode()
+    }
+
+    private func switchToNextEpisode() async {
+        guard let nextPlayableEpisode = viewModel.nextPlayableEpisode else { return }
+        await switchEpisode(nextPlayableEpisode.episode, seasonId: nextPlayableEpisode.season)
+    }
+
+    private func switchEpisode(_ id: Int?, seasonId: Int? = nil) async {
         guard let id else { return }
         isSwitching = true
         isSwitchingEpisode = true
@@ -966,7 +984,11 @@ private struct PlaybackPlayerView: View {
         }
 
         do {
-            try await viewModel.setCurrentEpisode(id: id)
+            if let seasonId, seasonId != viewModel.historyMedia.season {
+                try await viewModel.setCurrentSeason(id: seasonId)
+            } else {
+                try await viewModel.setCurrentEpisode(id: id)
+            }
         } catch {
             viewModel.presentPlaybackError(error)
         }
