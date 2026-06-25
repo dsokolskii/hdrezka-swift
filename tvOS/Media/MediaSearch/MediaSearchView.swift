@@ -78,13 +78,6 @@ struct MediaSearchContentView: View {
                             .focusEffectDisabled()
                             .buttonStyle(.borderless)
                             .onMoveLeftToProfileMenu(isLeadingGridColumn(index), perform: onMoveLeftToProfileMenu)
-                            .contextMenu {
-                                Button {
-                                    bookmarkViewModel.toggleBookmark(for: media)
-                                } label: {
-                                    Text(isBookmarked ? "Remove from Bookmark" : "Add to Bookmark")
-                                }
-                            }
                         }
                         if viewModel.canLoadMore {
                             Color.clear

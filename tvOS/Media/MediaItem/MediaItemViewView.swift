@@ -10,21 +10,6 @@ struct MediaItemViewView: View {
     private var cardShape: RoundedRectangle {
         RoundedRectangle(cornerRadius: AppTheme.cardCorner, style: .continuous)
     }
-
-    private var bookmarkBadge: some View {
-        ZStack {
-            Circle()
-                .fill(.black.opacity(0.55))
-
-            Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
-                .symbolRenderingMode(.monochrome)
-                .font(.system(size: 17, weight: .bold))
-                .foregroundStyle(.white)
-                .opacity(isBookmarked ? 1 : 0.72)
-        }
-        .frame(width: 36, height: 36)
-        .clipShape(Circle())
-    }
     
     var body: some View {
         ZStack {
@@ -68,9 +53,7 @@ struct MediaItemViewView: View {
                                 .background(.black.opacity(0.3), in: Capsule())
                         }
 
-//                        Spacer()
-
-//                        bookmarkBadge
+                        Spacer()
                     }
 
                     Spacer()

@@ -39,6 +39,7 @@ struct ContentView: View {
     @State private var presentedTopShelfRequest: TopShelfContinueRequest?
     @State private var isProfileMenuPresented = false
     @State private var isSearchPresented = false
+    @State private var isBookmarksPresented = false
     @State private var isSettingsPresented = false
     @State private var navigationRootID = UUID()
     @FocusState private var focusedProfileMenuItem: ProfileMenuFocusTarget?
@@ -127,6 +128,9 @@ struct ContentView: View {
                         viewModel: container.makeSearchViewModel(),
                         onMoveLeftToProfileMenu: focusProfileMenuButton
                     )
+                }
+                .navigationDestination(isPresented: $isBookmarksPresented) {
+                    MediaBookmarksView(onMoveLeftToProfileMenu: focusProfileMenuButton)
                 }
                 .navigationDestination(isPresented: $isSettingsPresented) {
                     SettingsView(onMirrorChanged: handleMirrorChanged)
@@ -247,6 +251,7 @@ struct ContentView: View {
                 profileMenuItem(title: "Поиск", systemImage: "magnifyingglass", focusTarget: .search) {
                     closeProfileMenu()
                     focusedProfileMenuItem = nil
+                    isBookmarksPresented = false
                     isSettingsPresented = false
                     isSearchPresented = true
                 }
@@ -255,13 +260,19 @@ struct ContentView: View {
                     navigateHome()
                 }
 
-                profileMenuItem(title: "Закладки", systemImage: "bookmark", focusTarget: .bookmarks, isEnabled: false) {
+                profileMenuItem(title: "Закладки", systemImage: "bookmark", focusTarget: .bookmarks) {
+                    closeProfileMenu()
+                    focusedProfileMenuItem = nil
+                    isSearchPresented = false
+                    isSettingsPresented = false
+                    isBookmarksPresented = true
                 }
 
                 profileMenuItem(title: "Настройки", systemImage: "gearshape", focusTarget: .settings) {
                     closeProfileMenu()
                     focusedProfileMenuItem = nil
                     isSearchPresented = false
+                    isBookmarksPresented = false
                     isSettingsPresented = true
                 }
             }
@@ -352,6 +363,7 @@ struct ContentView: View {
     private func navigateHome() {
         closeProfileMenu()
         isSearchPresented = false
+        isBookmarksPresented = false
         isSettingsPresented = false
         navigationRootID = UUID()
     }

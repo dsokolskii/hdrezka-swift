@@ -1,6 +1,43 @@
 import Foundation
 import OrderedCollections
 
+struct RelatedMediaTitle: Codable, Equatable, Identifiable {
+    var id: String { url.isEmpty ? title : url }
+
+    let title: String
+    let url: String
+    let year: String?
+    let rating: String?
+    let isCurrent: Bool
+
+    func media(fallbackCategory: Category, isSeries: Bool) -> Media {
+        Media(
+            title: title,
+            url: url,
+            descriptionShort: [year, rating.map { "Рейтинг \($0)" }]
+                .compactMap { $0 }
+                .joined(separator: ", "),
+            description: nil,
+            coverUrl: "",
+            seriesInfo: isSeries ? "" : nil,
+            category: fallbackCategory,
+            quality: .unknown
+        )
+    }
+}
+
+struct EpisodeReleaseScheduleItem: Codable, Equatable, Identifiable {
+    var id: String {
+        [episode, title, dateText].joined(separator: "|")
+    }
+
+    let episode: String
+    let title: String
+    let originalTitle: String?
+    let dateText: String
+    let isReleased: Bool
+}
+
 struct DetailedMedia {
     private enum CodingKeys: String, CodingKey {
         case id
@@ -12,6 +49,8 @@ struct DetailedMedia {
         case translations
         case seasons
         case coverUrl
+        case relatedTitles
+        case episodeSchedule
     }
 
     private(set) var id = UUID()
@@ -36,6 +75,8 @@ struct DetailedMedia {
     }
     
     let coverUrl: String
+    let relatedTitles: [RelatedMediaTitle]
+    let episodeSchedule: [EpisodeReleaseScheduleItem]
 
     init(
         mediaId: Int,
@@ -45,7 +86,9 @@ struct DetailedMedia {
         description: String,
         translations: OrderedDictionary<Int, String>,
         seasons: [Int: SeasonsData] = [:],
-        coverUrl: String
+        coverUrl: String,
+        relatedTitles: [RelatedMediaTitle] = [],
+        episodeSchedule: [EpisodeReleaseScheduleItem] = []
     ) {
         self.mediaId = mediaId
         self.title = title
@@ -55,6 +98,8 @@ struct DetailedMedia {
         self.translations = translations
         self.seasons = seasons
         self.coverUrl = ConstantsApi.secureURLString(from: coverUrl)
+        self.relatedTitles = relatedTitles
+        self.episodeSchedule = episodeSchedule
     }
 
     init(from decoder: Decoder) throws {
@@ -69,6 +114,8 @@ struct DetailedMedia {
         translations = try container.decode(OrderedDictionary<Int, String>.self, forKey: .translations)
         seasons = try container.decodeIfPresent([Int: SeasonsData].self, forKey: .seasons) ?? [:]
         coverUrl = ConstantsApi.secureURLString(from: try container.decode(String.self, forKey: .coverUrl))
+        relatedTitles = try container.decodeIfPresent([RelatedMediaTitle].self, forKey: .relatedTitles) ?? []
+        episodeSchedule = try container.decodeIfPresent([EpisodeReleaseScheduleItem].self, forKey: .episodeSchedule) ?? []
     }
     
     mutating func setup(seasons: SeasonsData, for translation: Int) {

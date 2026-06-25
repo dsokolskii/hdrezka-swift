@@ -58,6 +58,10 @@ final class DetailedMediaItemViewModel: ObservableObject {
     var title: String {
         detailedMedia.title
     }
+
+    var mediaID: Int? {
+        phase.value?.mediaId
+    }
     
     var originalTitle: String {
         detailedMedia.titleOriginal
@@ -73,6 +77,14 @@ final class DetailedMediaItemViewModel: ObservableObject {
     
     var description: String {
         detailedMedia.description
+    }
+
+    var relatedTitles: [RelatedMediaTitle] {
+        detailedMedia.relatedTitles
+    }
+
+    var episodeSchedule: [EpisodeReleaseScheduleItem] {
+        detailedMedia.episodeSchedule
     }
     
     var currentTranslationTitle: String? {

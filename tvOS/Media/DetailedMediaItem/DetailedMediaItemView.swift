@@ -45,6 +45,7 @@ struct DetailedMediaItemView: View {
     @StateObject private var bookmarkViewModel: MediaBookmarksViewModel
     
     @State private var isTranslationMenuPresented = false
+    @State private var isBookmarkFolderMenuPresented = false
     @State private var isSeasonsMenuPresented = false
     @State private var skipSeasonsMenuPresented = false
     @State private var isEpisodesMenuPresented = false
@@ -81,6 +82,23 @@ struct DetailedMediaItemView: View {
                 }
         }
         .overlay(overlayView)
+        .alert(
+            "Не удалось обновить закладки",
+            isPresented: Binding(
+                get: { bookmarkViewModel.actionErrorMessage != nil },
+                set: { isPresented in
+                    if isPresented == false {
+                        bookmarkViewModel.clearActionError()
+                    }
+                }
+            )
+        ) {
+            Button("OK", role: .cancel) {
+                bookmarkViewModel.clearActionError()
+            }
+        } message: {
+            Text(bookmarkViewModel.actionErrorMessage ?? "Попробуйте еще раз.")
+        }
         .alert(
             "Не удалось загрузить видео",
             isPresented: Binding(
@@ -204,15 +222,35 @@ struct DetailedMediaItemView: View {
     private var heroControlsPanel: some View {
         VStack(alignment: .leading, spacing: 20) {
             HStack(spacing: 12) {
-//                Button {
-//                    bookmarkViewModel.toggleBookmark(for: viewModel.media)
-//                } label: {
-//                    Image(systemName: bookmarkViewModel.isBookmarked(for: viewModel.media) ? "bookmark.fill" : "bookmark")
-//                }
-//                .buttonStyle(.glass)
-//                .buttonBorderShape(.circle)
-//                .controlSize(.small)
-//                .focused($focusedHeroControl, equals: .bookmark)
+                Button {
+                    Task {
+                        if bookmarkViewModel.folders.isEmpty {
+                            await bookmarkViewModel.load()
+                        }
+                        await bookmarkViewModel.refreshContainingFolders(for: viewModel.media)
+                        isBookmarkFolderMenuPresented = true
+                    }
+                } label: {
+                    Image(systemName: bookmarkViewModel.bookMarkIcon(for: viewModel.media))
+                        .symbolRenderingMode(.hierarchical)
+                        .foregroundStyle(bookmarkViewModel.isBookmarked(for: viewModel.media) ? .yellow : .white)
+                }
+                .buttonStyle(.glass)
+                .buttonBorderShape(.circle)
+                .controlSize(.small)
+                .overlay {
+                    if bookmarkViewModel.isBookmarked(for: viewModel.media) {
+                        Circle()
+                            .strokeBorder(.yellow.opacity(0.72), lineWidth: 2)
+                    }
+                }
+                .focused($focusedHeroControl, equals: .bookmark)
+                .onMoveLeftToProfileMenu(true, perform: onMoveLeftToProfileMenu)
+                .disabled(viewModel.mediaID == nil || bookmarkViewModel.isUpdating)
+                .alert("Папка закладок", isPresented: $isBookmarkFolderMenuPresented) {
+                    bookmarkFolderMenu
+                    cancelButton
+                }
                 
                 Button {
                     startPlaybackFromBeginning()
@@ -389,11 +427,154 @@ struct DetailedMediaItemView: View {
                 )
                     .padding(.top, 8)
             }
+
+            if viewModel.relatedTitles.isEmpty == false {
+                relatedTitlesSection(width: bodyWidth)
+                    .padding(.top, 12)
+            }
+
+            if viewModel.media.isSeries, viewModel.episodeSchedule.isEmpty == false {
+                episodeScheduleSection(width: bodyWidth)
+                    .padding(.top, 12)
+            }
         }
         .frame(
             width: bodyWidth,
             alignment: .leading
         )
+    }
+
+    private func relatedTitlesSection(width: CGFloat) -> some View {
+        AppPanel {
+            VStack(alignment: .leading, spacing: 16) {
+                Label("Связанные тайтлы", systemImage: "rectangle.stack")
+                    .font(.headline.weight(.semibold))
+                    .foregroundStyle(.white)
+
+                VStack(alignment: .leading, spacing: 10) {
+                    ForEach(viewModel.relatedTitles.prefix(8)) { item in
+                        relatedTitleRow(item)
+                    }
+                }
+            }
+            .frame(width: max(0, width - 68), alignment: .leading)
+        }
+        .frame(width: width, alignment: .leading)
+    }
+
+    @ViewBuilder
+    private func relatedTitleRow(_ item: RelatedMediaTitle) -> some View {
+        if item.isCurrent || item.url.isEmpty {
+            relatedTitleRowContent(item)
+                .padding(.horizontal, 18)
+                .padding(.vertical, 14)
+                .foregroundStyle(.secondary)
+        } else {
+            NavigationLink {
+                DetailedMediaItemView(
+                    viewModel: DetailedMediaItemViewModel(
+                        media: item.media(
+                            fallbackCategory: viewModel.media.category,
+                            isSeries: viewModel.media.isSeries
+                        )
+                    ),
+                    bookmarkViewModel: bookmarkViewModel,
+                    onMoveLeftToProfileMenu: onMoveLeftToProfileMenu
+                )
+            } label: {
+                relatedTitleRowContent(item)
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 14)
+            }
+            .buttonStyle(.glass)
+            .buttonBorderShape(.roundedRectangle(radius: 18))
+        }
+    }
+
+    private func relatedTitleRowContent(_ item: RelatedMediaTitle) -> some View {
+        HStack(spacing: 14) {
+            Image(systemName: item.isCurrent ? "play.fill" : "play")
+                .font(.headline.weight(.semibold))
+                .frame(width: 26)
+
+            Text(item.title)
+                .font(.headline.weight(.semibold))
+                .lineLimit(2)
+
+            Spacer(minLength: 18)
+
+            if let year = item.year {
+                Text(year)
+                    .font(.callout.weight(.semibold))
+                    .foregroundStyle(.secondary)
+            }
+
+            if let rating = item.rating {
+                Text(rating)
+                    .font(.callout.weight(.bold))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 5)
+                    .background(.green.opacity(0.72), in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                    .foregroundStyle(.white)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func episodeScheduleSection(width: CGFloat) -> some View {
+        AppPanel {
+            VStack(alignment: .leading, spacing: 16) {
+                Label("График выхода серий", systemImage: "calendar")
+                    .font(.headline.weight(.semibold))
+                    .foregroundStyle(.white)
+
+                VStack(alignment: .leading, spacing: 0) {
+                    ForEach(Array(viewModel.episodeSchedule.prefix(8).enumerated()), id: \.element.id) { index, item in
+                        if index > 0 {
+                            Divider()
+                                .overlay(AppTheme.hairline)
+                        }
+                        episodeScheduleRow(item)
+                    }
+                }
+            }
+            .frame(width: max(0, width - 68), alignment: .leading)
+        }
+        .frame(width: width, alignment: .leading)
+    }
+
+    private func episodeScheduleRow(_ item: EpisodeReleaseScheduleItem) -> some View {
+        HStack(alignment: .center, spacing: 18) {
+            Label(item.episode, systemImage: item.isReleased ? "checkmark.circle.fill" : "calendar")
+                .font(.callout.weight(.semibold))
+                .foregroundStyle(item.isReleased ? .green : .secondary)
+                .frame(width: 230, alignment: .leading)
+
+            VStack(alignment: .leading, spacing: 3) {
+                if item.title.isEmpty == false {
+                    Text(item.title)
+                        .font(.headline.weight(.semibold))
+                        .foregroundStyle(.white)
+                        .lineLimit(2)
+                }
+
+                if let originalTitle = item.originalTitle, originalTitle.isEmpty == false {
+                    Text(originalTitle)
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            if item.dateText.isEmpty == false {
+                Text(item.dateText)
+                    .font(.callout.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .frame(width: 210, alignment: .trailing)
+            }
+        }
+        .padding(.vertical, 14)
     }
 
     private func scrollEndAnchor(availableWidth: CGFloat) -> some View {
@@ -531,6 +712,27 @@ struct DetailedMediaItemView: View {
       viewModel.setQuality(id)
     }
     
+    @ViewBuilder
+    private var bookmarkFolderMenu: some View {
+        ForEach(bookmarkViewModel.folders) { folder in
+            let isSelected = bookmarkViewModel.isBookmarked(viewModel.media, in: folder)
+
+            Button {
+                guard let mediaID = viewModel.mediaID else { return }
+
+                Task {
+                    if isSelected {
+                        await bookmarkViewModel.removeBookmark(media: viewModel.media, mediaID: mediaID, from: folder.id)
+                    } else {
+                        await bookmarkViewModel.addBookmark(media: viewModel.media, mediaID: mediaID, to: folder.id)
+                    }
+                }
+            } label: {
+                Text(isSelected ? "\(selectionIcon)  \(folder.name)" : folder.name)
+            }
+        }
+    }
+
     @ViewBuilder
     private var translationMenu: some View {
         let items = viewModel.translations

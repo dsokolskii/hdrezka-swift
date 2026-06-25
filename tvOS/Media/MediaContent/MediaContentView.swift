@@ -57,18 +57,6 @@ struct MediaContentView: View {
 //                            .focusEffectDisabled()
                             .buttonStyle(.borderless)
                             .onMoveLeftToProfileMenu(isLeadingGridColumn(index), perform: onMoveLeftToProfileMenu)
-                            .contextMenu {
-                                Button {
-                                    bookmarkViewModel.toggleBookmark(for: media)
-                                } label: {
-                                    Text(isBookmarked ? "Remove from Bookmark" : "Add to Bookmark")
-                                }
-
-                                Button (role: .cancel) {
-                                } label: {
-                                    Text("Cancel")
-                                }
-                            }
                         }
                     }
                 }
@@ -101,7 +89,11 @@ struct MediaContentView: View {
             .buttonStyle(.glass)
             .buttonBorderShape(.capsule)
             .controlSize(.small)
-            .onMoveLeftToProfileMenu(true, perform: onMoveLeftToProfileMenu)
+            .onMoveCommand { direction in
+                if direction == .up || direction == .left {
+                    onMoveLeftToProfileMenu()
+                }
+            }
             .alert("Сортировка", isPresented: $isFilterMenuPresented) {
                 ForEach(viewModel.filters) { filter in
                     Button {
@@ -132,7 +124,11 @@ struct MediaContentView: View {
             .buttonStyle(.glass)
             .buttonBorderShape(.capsule)
             .controlSize(.small)
-            .onMoveLeftToProfileMenu(viewModel.filters.isEmpty, perform: onMoveLeftToProfileMenu)
+            .onMoveCommand { direction in
+                if direction == .up || (direction == .left && viewModel.filters.isEmpty) {
+                    onMoveLeftToProfileMenu()
+                }
+            }
             .alert("Категория", isPresented: $isGenreMenuPresented) {
                 Button {
                     Task {
