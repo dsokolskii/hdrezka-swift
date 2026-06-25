@@ -1,4 +1,3 @@
-import SwiftUI
 import Foundation
 
 struct CategoryList: Identifiable, Hashable, Equatable, Codable {
@@ -90,14 +89,5 @@ class SubCategoryList: ListItemProtocol, Identifiable {
     init(name: String, uri: String) {
         self.name = name
         self.uri = uri
-    }
-    
-    @ViewBuilder
-    var detailsView: AnyView {
-#if os(watchOS)
-        AnyView(EmptyView())
-#else
-        AnyView(PreviewDetailView(item: self))
-#endif
     }
 }

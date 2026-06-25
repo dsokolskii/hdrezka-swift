@@ -1,6 +1,5 @@
 import Foundation
 import Observation
-import SwiftUI
 
 @MainActor
 @Observable
@@ -42,16 +41,12 @@ final class MediaContentViewModel {
     }
 
     func setFilter(_ filter: SubCategoryList) async {
-        withoutAnimation {
-            selectedFilter = filter
-        }
+        selectedFilter = filter
         await loadMedias()
     }
 
     func setGenre(_ genre: SubCategoryList?) async {
-        withoutAnimation {
-            selectedGenre = genre
-        }
+        selectedGenre = genre
         await loadMedias()
     }
     
@@ -63,14 +58,10 @@ final class MediaContentViewModel {
             filter: selectedFilter,
             genre: selectedGenre
         ) {
-            withoutAnimation {
-                medias = articles
-                phase = .fetchingNextPage(articles)
-            }
+            medias = articles
+            phase = .fetchingNextPage(articles)
         } else {
-            withoutAnimation {
-                phase = .fetching
-            }
+            phase = .fetching
         }
         self.page = 1
         
@@ -79,9 +70,7 @@ final class MediaContentViewModel {
     
     func loadMore() async {
         if isFetching == false {
-            withoutAnimation {
-                phase = .fetchingNextPage(newMedias)
-            }
+            phase = .fetchingNextPage(newMedias)
             
             await loadData(page: page)
         }
@@ -105,30 +94,20 @@ final class MediaContentViewModel {
             let updatedMedias = currentMedias + categoryMedias
             let displayMedias = categoryMedias.isEmpty ? updatedMedias : updatedMedias + [.empty]
 
-            withoutAnimation {
-                medias = displayMedias
-                phase = .success(medias)
-            }
+            medias = displayMedias
+            phase = .success(medias)
             self.page = page + 1
             isFetching = false
             
         } catch {
             if Task.isCancelled { return }
             if medias.isEmpty == false {
-                withoutAnimation {
-                    phase = .success(medias)
-                }
+                phase = .success(medias)
             } else {
                 phase = .failure(error)
             }
             isFetching = false
         }
-    }
-
-    private func withoutAnimation(_ updates: () -> Void) {
-        var transaction = Transaction()
-        transaction.disablesAnimations = true
-        withTransaction(transaction, updates)
     }
 
     private static func defaultFilter(from filters: [SubCategoryList]) -> SubCategoryList? {
