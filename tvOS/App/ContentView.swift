@@ -698,11 +698,6 @@ private struct SettingsView: View {
             .padding(.vertical, 54)
         }
         .navigationTitle("Настройки")
-        .onAppear {
-            Task { @MainActor in
-                focusedTarget = .editMirror
-            }
-        }
         .onChange(of: focusRequest) { _, _ in
             focusedTarget = .editMirror
         }
