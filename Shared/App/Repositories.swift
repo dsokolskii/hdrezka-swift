@@ -44,10 +44,31 @@ struct LiveNavigationRepository: NavigationRepository {
     }
 
     func refreshNavigation() async throws -> NavigationPayload {
+        let cachedNavigation = await cachedNavigation()
         let navigation = try await api.fetch()
-        await cache.setValue(navigation, forKey: CacheKeys.categoriesList)
+        let resolvedNavigation = navigation.preferred(over: cachedNavigation)
+        await cache.setValue(resolvedNavigation, forKey: CacheKeys.categoriesList)
         try? await cache.saveToDisk()
-        return navigation
+        return resolvedNavigation
+    }
+}
+
+private extension NavigationPayload {
+    var visibleCategoriesCount: Int {
+        categories.filter { $0.type != .search && $0.type != .collections && $0.type != .announce }.count
+    }
+
+    func preferred(over cachedNavigation: NavigationPayload?) -> NavigationPayload {
+        guard let cachedNavigation else {
+            return self
+        }
+
+        guard visibleCategoriesCount <= 1,
+              cachedNavigation.visibleCategoriesCount > visibleCategoriesCount else {
+            return self
+        }
+
+        return cachedNavigation
     }
 }
 

@@ -4,6 +4,8 @@ import SwiftSoup
 struct NavigationRezkaApiResponse: Decodable {
     let categories: [CategoryList]
     let userProfile: RezkaUserProfile?
+
+    private static let preferredOrder: [Category] = [.general, .films, .series, .animation, .cartoons, .new]
     
     init(from html: String) throws {
         let doc = try SwiftSoup.parse(html)
@@ -68,11 +70,23 @@ struct NavigationRezkaApiResponse: Decodable {
             
             categories.append(categoryList)
         })
+        if categories.count <= 1 {
+            categories = try Self.fallbackCategories(from: doc)
+        }
+
+        var orderedCategories = Self.orderedCategories(from: categories)
         
-        let preferredOrder: [Category] = [.films, .series, .animation, .cartoons, .general, .new]
+        let categoryList = CategoryList(type: .search, items: [], name: "Поиск", iconName: "magnifyingglass")
+        orderedCategories.insert(categoryList, at: 0)
+        
+        self.categories = orderedCategories
+        self.userProfile = try Self.userProfile(from: doc)
+    }
+
+    private static func orderedCategories(from categories: [CategoryList]) -> [CategoryList] {
         var orderedCategories = preferredOrder.compactMap { type in
             categories.first(where: { $0.type == type })
-                .map(Self.normalizedCategory)
+                .map(normalizedCategory)
         }
 
         let remainingCategories = categories.filter { category in
@@ -80,13 +94,59 @@ struct NavigationRezkaApiResponse: Decodable {
                 && category.type != .announce
                 && !orderedCategories.contains(where: { $0.type == category.type })
         }
-        orderedCategories.append(contentsOf: remainingCategories.map(Self.normalizedCategory))
-        
-        let categoryList = CategoryList(type: .search, items: [], name: "Поиск", iconName: "magnifyingglass")
-        orderedCategories.insert(categoryList, at: 0)
-        
-        self.categories = orderedCategories
-        self.userProfile = try Self.userProfile(from: doc)
+        orderedCategories.append(contentsOf: remainingCategories.map(normalizedCategory))
+
+        return orderedCategories
+    }
+
+    private static func fallbackCategories(from document: Document) throws -> [CategoryList] {
+        let selectors = [
+            ".footer-links a",
+            "a[href^=\"/films/\"]",
+            "a[href^=\"/series/\"]",
+            "a[href^=\"/cartoons/\"]",
+            "a[href^=\"/animation/\"]",
+            "a[href^=\"/new/\"]"
+        ]
+
+        var categoriesByType: [Category: CategoryList] = [:]
+
+        for selector in selectors {
+            for link in try document.select(selector).array() {
+                let href = try link.attr("href")
+                let type = Category(rawValue: href.letters)
+                guard let type, type != .none, type != .search else {
+                    continue
+                }
+
+                let title = try link.text().trimmingCharacters(in: .whitespacesAndNewlines)
+                guard title.isEmpty == false else {
+                    continue
+                }
+
+                categoriesByType[type] = CategoryList(
+                    type: type,
+                    items: [],
+                    filters: [],
+                    genres: [],
+                    name: title,
+                    iconName: ""
+                )
+            }
+        }
+
+        if categoriesByType[.general] == nil {
+            categoriesByType[.general] = CategoryList(
+                type: .general,
+                items: [],
+                filters: [],
+                genres: [],
+                name: "Главная",
+                iconName: ""
+            )
+        }
+
+        return orderedCategories(from: Array(categoriesByType.values))
     }
 
     private static func normalizedCategory(_ category: CategoryList) -> CategoryList {
