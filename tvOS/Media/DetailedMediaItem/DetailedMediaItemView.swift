@@ -12,6 +12,8 @@ struct DetailedMediaItemView: View {
 
     private enum DetailScrollAnchor: Hashable {
         case top
+        case relatedTitles
+        case episodeSchedule
     }
 
     private enum HeroControl: Hashable {
@@ -38,6 +40,11 @@ struct DetailedMediaItemView: View {
         case resume
     }
 
+    private enum DetailSectionFocusTarget: Hashable {
+        case relatedTitle(String)
+        case scheduleRow(String)
+    }
+
     private let selectionIcon = "🟢"
     
     @StateObject private var viewModel: DetailedMediaItemViewModel
@@ -45,7 +52,6 @@ struct DetailedMediaItemView: View {
     @StateObject private var bookmarkViewModel: MediaBookmarksViewModel
     
     @State private var isTranslationMenuPresented = false
-    @State private var isBookmarkFolderMenuPresented = false
     @State private var isSeasonsMenuPresented = false
     @State private var skipSeasonsMenuPresented = false
     @State private var isEpisodesMenuPresented = false
@@ -56,6 +62,7 @@ struct DetailedMediaItemView: View {
     @State private var didAttemptAutoPlayback = false
     @State private var preparingPlaybackAction: PlaybackStartAction?
     @FocusState private var focusedHeroControl: HeroControl?
+    @FocusState private var focusedDetailSectionTarget: DetailSectionFocusTarget?
 
     private let autoResumePlaybackPosition: Double?
     private let onMoveLeftToProfileMenu: () -> Void
@@ -82,23 +89,6 @@ struct DetailedMediaItemView: View {
                 }
         }
         .overlay(overlayView)
-        .alert(
-            "Не удалось обновить закладки",
-            isPresented: Binding(
-                get: { bookmarkViewModel.actionErrorMessage != nil },
-                set: { isPresented in
-                    if isPresented == false {
-                        bookmarkViewModel.clearActionError()
-                    }
-                }
-            )
-        ) {
-            Button("OK", role: .cancel) {
-                bookmarkViewModel.clearActionError()
-            }
-        } message: {
-            Text(bookmarkViewModel.actionErrorMessage ?? "Попробуйте еще раз.")
-        }
         .alert(
             "Не удалось загрузить видео",
             isPresented: Binding(
@@ -222,35 +212,15 @@ struct DetailedMediaItemView: View {
     private var heroControlsPanel: some View {
         VStack(alignment: .leading, spacing: 20) {
             HStack(spacing: 12) {
-                Button {
-                    Task {
-                        if bookmarkViewModel.folders.isEmpty {
-                            await bookmarkViewModel.load()
-                        }
-                        await bookmarkViewModel.refreshContainingFolders(for: viewModel.media)
-                        isBookmarkFolderMenuPresented = true
-                    }
-                } label: {
-                    Image(systemName: bookmarkViewModel.bookMarkIcon(for: viewModel.media))
-                        .symbolRenderingMode(.hierarchical)
-                        .foregroundStyle(bookmarkViewModel.isBookmarked(for: viewModel.media) ? .yellow : .white)
-                }
-                .buttonStyle(.glass)
-                .buttonBorderShape(.circle)
-                .controlSize(.small)
-                .overlay {
-                    if bookmarkViewModel.isBookmarked(for: viewModel.media) {
-                        Circle()
-                            .strokeBorder(.yellow.opacity(0.72), lineWidth: 2)
-                    }
-                }
-                .focused($focusedHeroControl, equals: .bookmark)
-                .onMoveLeftToProfileMenu(true, perform: onMoveLeftToProfileMenu)
-                .disabled(viewModel.mediaID == nil || bookmarkViewModel.isUpdating)
-                .alert("Папка закладок", isPresented: $isBookmarkFolderMenuPresented) {
-                    bookmarkFolderMenu
-                    cancelButton
-                }
+//                Button {
+//                    bookmarkViewModel.toggleBookmark(for: viewModel.media)
+//                } label: {
+//                    Image(systemName: bookmarkViewModel.isBookmarked(for: viewModel.media) ? "bookmark.fill" : "bookmark")
+//                }
+//                .buttonStyle(.glass)
+//                .buttonBorderShape(.circle)
+//                .controlSize(.small)
+//                .focused($focusedHeroControl, equals: .bookmark)
                 
                 Button {
                     startPlaybackFromBeginning()
@@ -431,11 +401,13 @@ struct DetailedMediaItemView: View {
             if viewModel.relatedTitles.isEmpty == false {
                 relatedTitlesSection(width: bodyWidth)
                     .padding(.top, 12)
+                    .id(DetailScrollAnchor.relatedTitles)
             }
 
             if viewModel.media.isSeries, viewModel.episodeSchedule.isEmpty == false {
                 episodeScheduleSection(width: bodyWidth)
                     .padding(.top, 12)
+                    .id(DetailScrollAnchor.episodeSchedule)
             }
         }
         .frame(
@@ -456,6 +428,7 @@ struct DetailedMediaItemView: View {
                         relatedTitleRow(item)
                     }
                 }
+                .focusSection()
             }
             .frame(width: max(0, width - 68), alignment: .leading)
         }
@@ -465,10 +438,7 @@ struct DetailedMediaItemView: View {
     @ViewBuilder
     private func relatedTitleRow(_ item: RelatedMediaTitle) -> some View {
         if item.isCurrent || item.url.isEmpty {
-            relatedTitleRowContent(item)
-                .padding(.horizontal, 18)
-                .padding(.vertical, 14)
-                .foregroundStyle(.secondary)
+            relatedTitleStaticRow(item)
         } else {
             NavigationLink {
                 DetailedMediaItemView(
@@ -482,23 +452,48 @@ struct DetailedMediaItemView: View {
                     onMoveLeftToProfileMenu: onMoveLeftToProfileMenu
                 )
             } label: {
-                relatedTitleRowContent(item)
+                relatedTitleRowContent(item, isCurrent: false)
                     .padding(.horizontal, 18)
                     .padding(.vertical, 14)
             }
             .buttonStyle(.glass)
             .buttonBorderShape(.roundedRectangle(radius: 18))
+            .focused($focusedDetailSectionTarget, equals: .relatedTitle(item.id))
+            .onMoveLeftToProfileMenu(true, perform: onMoveLeftToProfileMenu)
         }
     }
 
-    private func relatedTitleRowContent(_ item: RelatedMediaTitle) -> some View {
+    private func relatedTitleStaticRow(_ item: RelatedMediaTitle) -> some View {
+        let isFocused = focusedDetailSectionTarget == .relatedTitle(item.id)
+
+        return relatedTitleRowContent(item, isCurrent: true)
+            .padding(.horizontal, 18)
+            .padding(.vertical, 14)
+            .background {
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(isFocused ? Color.white.opacity(0.14) : AppTheme.panel)
+            }
+            .overlay {
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .strokeBorder(
+                        isFocused ? Color.white.opacity(0.34) : AppTheme.hairline,
+                        lineWidth: isFocused ? 1.5 : 1
+                    )
+            }
+            .focusable()
+            .focused($focusedDetailSectionTarget, equals: .relatedTitle(item.id))
+            .onMoveLeftToProfileMenu(true, perform: onMoveLeftToProfileMenu)
+    }
+
+    private func relatedTitleRowContent(_ item: RelatedMediaTitle, isCurrent: Bool) -> some View {
         HStack(spacing: 14) {
-            Image(systemName: item.isCurrent ? "play.fill" : "play")
+            Image(systemName: isCurrent ? "play.fill" : "play")
                 .font(.headline.weight(.semibold))
                 .frame(width: 26)
 
             Text(item.title)
                 .font(.headline.weight(.semibold))
+                .foregroundStyle(isCurrent ? Color.white.opacity(0.66) : Color.white)
                 .lineLimit(2)
 
             Spacer(minLength: 18)
@@ -537,6 +532,7 @@ struct DetailedMediaItemView: View {
                         episodeScheduleRow(item)
                     }
                 }
+                .focusSection()
             }
             .frame(width: max(0, width - 68), alignment: .leading)
         }
@@ -544,11 +540,30 @@ struct DetailedMediaItemView: View {
     }
 
     private func episodeScheduleRow(_ item: EpisodeReleaseScheduleItem) -> some View {
-        HStack(alignment: .center, spacing: 18) {
-            Label(item.episode, systemImage: item.isReleased ? "checkmark.circle.fill" : "calendar")
-                .font(.callout.weight(.semibold))
-                .foregroundStyle(item.isReleased ? .green : .secondary)
-                .frame(width: 230, alignment: .leading)
+        let isFocused = focusedDetailSectionTarget == .scheduleRow(item.id)
+        let metadata = episodeMetadata(for: item.episode)
+
+        return HStack(alignment: .center, spacing: 24) {
+            HStack(alignment: .top, spacing: 14) {
+                Image(systemName: item.isReleased ? "checkmark.circle.fill" : "calendar")
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(item.isReleased ? .green : .secondary)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(metadata.season)
+                        .font(.callout.weight(.semibold))
+                        .foregroundStyle(item.isReleased ? .green : .secondary)
+                        .lineLimit(1)
+
+                    if let episode = metadata.episode {
+                        Text(episode)
+                            .font(.callout.weight(.semibold))
+                            .foregroundStyle(item.isReleased ? .green : .secondary)
+                            .lineLimit(1)
+                    }
+                }
+            }
+            .frame(width: 220, alignment: .leading)
 
             VStack(alignment: .leading, spacing: 3) {
                 if item.title.isEmpty == false {
@@ -571,10 +586,27 @@ struct DetailedMediaItemView: View {
                 Text(item.dateText)
                     .font(.callout.weight(.semibold))
                     .foregroundStyle(.secondary)
-                    .frame(width: 210, alignment: .trailing)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.82)
+                    .frame(width: 250, alignment: .trailing)
             }
         }
-        .padding(.vertical, 14)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 16)
+        .background {
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(isFocused ? Color.white.opacity(0.14) : .clear)
+        }
+        .overlay {
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .strokeBorder(
+                    isFocused ? Color.white.opacity(0.28) : .clear,
+                    lineWidth: 1.5
+                )
+        }
+        .focusable()
+        .focused($focusedDetailSectionTarget, equals: .scheduleRow(item.id))
+        .onMoveLeftToProfileMenu(true, perform: onMoveLeftToProfileMenu)
     }
 
     private func scrollEndAnchor(availableWidth: CGFloat) -> some View {
@@ -683,6 +715,27 @@ struct DetailedMediaItemView: View {
             scrollProxy.scrollTo(DetailScrollAnchor.top, anchor: .top)
         }
     }
+
+    private func episodeMetadata(for text: String) -> (season: String, episode: String?) {
+        let normalized = text
+            .replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        let pattern = #"^(\d+\s+сезон)\s+(\d+\s+серия)$"#
+        guard let regex = try? NSRegularExpression(pattern: pattern) else {
+            return (normalized, nil)
+        }
+
+        let range = NSRange(normalized.startIndex..<normalized.endIndex, in: normalized)
+        guard let match = regex.firstMatch(in: normalized, range: range),
+              let seasonRange = Range(match.range(at: 1), in: normalized) else {
+            return (normalized, nil)
+        }
+
+        let season = String(normalized[seasonRange])
+        let episode = Range(match.range(at: 2), in: normalized).map { String(normalized[$0]) }
+        return (season, episode)
+    }
     
     private func selectTranslation(id: Int) async {
         do {
@@ -712,27 +765,6 @@ struct DetailedMediaItemView: View {
       viewModel.setQuality(id)
     }
     
-    @ViewBuilder
-    private var bookmarkFolderMenu: some View {
-        ForEach(bookmarkViewModel.folders) { folder in
-            let isSelected = bookmarkViewModel.isBookmarked(viewModel.media, in: folder)
-
-            Button {
-                guard let mediaID = viewModel.mediaID else { return }
-
-                Task {
-                    if isSelected {
-                        await bookmarkViewModel.removeBookmark(media: viewModel.media, mediaID: mediaID, from: folder.id)
-                    } else {
-                        await bookmarkViewModel.addBookmark(media: viewModel.media, mediaID: mediaID, to: folder.id)
-                    }
-                }
-            } label: {
-                Text(isSelected ? "\(selectionIcon)  \(folder.name)" : folder.name)
-            }
-        }
-    }
-
     @ViewBuilder
     private var translationMenu: some View {
         let items = viewModel.translations

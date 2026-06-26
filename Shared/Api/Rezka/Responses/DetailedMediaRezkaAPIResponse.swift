@@ -217,7 +217,7 @@ struct DetailedMediaRezkaAPIResponse: Decodable {
             }
         }
 
-        return Array(itemsByID.values)
+        return Array(itemsByID.values).sorted(by: compareEpisodeScheduleItems)
     }
 
     private static func episodeScheduleContainers(in doc: Document) throws -> [Element] {
@@ -303,5 +303,74 @@ struct DetailedMediaRezkaAPIResponse: Decodable {
 
         let range = NSRange(text.startIndex..<text.endIndex, in: text)
         return regex.numberOfMatches(in: text, range: range)
+    }
+
+    private static func compareEpisodeScheduleItems(
+        _ lhs: EpisodeReleaseScheduleItem,
+        _ rhs: EpisodeReleaseScheduleItem
+    ) -> Bool {
+        let lhsOrder = episodeOrder(from: lhs.episode)
+        let rhsOrder = episodeOrder(from: rhs.episode)
+
+        if lhsOrder.season != rhsOrder.season {
+            return lhsOrder.season < rhsOrder.season
+        }
+
+        if lhsOrder.episode != rhsOrder.episode {
+            return lhsOrder.episode < rhsOrder.episode
+        }
+
+        let lhsDate = releaseDate(from: lhs.dateText)
+        let rhsDate = releaseDate(from: rhs.dateText)
+        if let lhsDate, let rhsDate, lhsDate != rhsDate {
+            return lhsDate < rhsDate
+        }
+
+        if lhs.dateText != rhs.dateText {
+            return lhs.dateText < rhs.dateText
+        }
+
+        return lhs.title < rhs.title
+    }
+
+    private static func episodeOrder(from text: String) -> (season: Int, episode: Int) {
+        let normalized = normalizedSpaces(text)
+        let pattern = #"(\d+)\s+сезон\s+(\d+)\s+серия"#
+
+        guard let regex = try? NSRegularExpression(pattern: pattern) else {
+            return (.max, .max)
+        }
+
+        let range = NSRange(normalized.startIndex..<normalized.endIndex, in: normalized)
+        guard let match = regex.firstMatch(in: normalized, range: range),
+              let seasonRange = Range(match.range(at: 1), in: normalized),
+              let episodeRange = Range(match.range(at: 2), in: normalized),
+              let season = Int(normalized[seasonRange]),
+              let episode = Int(normalized[episodeRange]) else {
+            return (.max, .max)
+        }
+
+        return (season, episode)
+    }
+
+    private static func releaseDate(from text: String) -> Date? {
+        let normalized = normalizedSpaces(text).lowercased()
+        guard normalized.isEmpty == false else {
+            return nil
+        }
+
+        if normalized.contains(".") {
+            let formatter = DateFormatter()
+            formatter.locale = Locale(identifier: "ru_RU")
+            formatter.calendar = Calendar(identifier: .gregorian)
+            formatter.dateFormat = "dd.MM.yyyy"
+            return formatter.date(from: normalized)
+        }
+
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ru_RU")
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.dateFormat = "d MMMM yyyy"
+        return formatter.date(from: normalized)
     }
 }

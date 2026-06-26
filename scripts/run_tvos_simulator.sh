@@ -8,6 +8,9 @@ SCHEME="rezka-player"
 BUNDLE_ID="com.isoft.rezka-player"
 DEFAULT_DEVICE_NAME="Apple TV 4K (3rd generation)"
 DEVICE_QUERY="${1:-$DEFAULT_DEVICE_NAME}"
+WORKTREE_TAG="$(basename "$(dirname "$ROOT_DIR")")-$(basename "$ROOT_DIR")"
+DERIVED_DATA_PATH="/private/tmp/$WORKTREE_TAG-tvos-deriveddata"
+APP_PATH="$DERIVED_DATA_PATH/Build/Products/Debug-appletvsimulator/rezka-player.app"
 
 DEVICE_ID="$(
   xcrun simctl list devices available | \
@@ -30,16 +33,10 @@ xcodebuild \
   -project "$PROJECT" \
   -scheme "$SCHEME" \
   -destination "id=$DEVICE_ID" \
+  -derivedDataPath "$DERIVED_DATA_PATH" \
   build >/dev/null
 
-APP_PATH="$(
-  find "$HOME/Library/Developer/Xcode/DerivedData" \
-    -path "*/Build/Products/Debug-appletvsimulator/rezka-player.app" \
-    | grep -v '/Index\.noindex/' \
-    | head -n 1
-)"
-
-if [[ -z "$APP_PATH" ]]; then
+if [[ ! -d "$APP_PATH" ]]; then
   echo "Build finished, but app path was not found in DerivedData."
   exit 1
 fi
