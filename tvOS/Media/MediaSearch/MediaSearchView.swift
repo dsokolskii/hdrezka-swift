@@ -6,10 +6,16 @@ struct MediaSearchView: View {
     @State private var viewModel: MediaSearchContentViewModel
     @State private var searchTask: Task<Void, Never>?
     private let onMoveLeftToProfileMenu: () -> Void
+    private let focusRequest: Int
 
-    init(viewModel: MediaSearchContentViewModel, onMoveLeftToProfileMenu: @escaping () -> Void = {}) {
+    init(
+        viewModel: MediaSearchContentViewModel,
+        onMoveLeftToProfileMenu: @escaping () -> Void = {},
+        focusRequest: Int = 0
+    ) {
         _viewModel = State(initialValue: viewModel)
         self.onMoveLeftToProfileMenu = onMoveLeftToProfileMenu
+        self.focusRequest = focusRequest
     }
 
     var body: some View {
@@ -18,7 +24,8 @@ struct MediaSearchView: View {
             VStack(spacing: 12) {
                 MediaSearchContentView(
                     viewModel: viewModel,
-                    onMoveLeftToProfileMenu: onMoveLeftToProfileMenu
+                    onMoveLeftToProfileMenu: onMoveLeftToProfileMenu,
+                    focusRequest: focusRequest
                 )
             }
             .onChange(of: text) { _, newValue in
@@ -42,10 +49,16 @@ struct MediaSearchView: View {
 }
 
 struct MediaSearchContentView: View {
+    private enum FocusTarget: Hashable {
+        case media(String)
+    }
+
     let viewModel: MediaSearchContentViewModel
     let onMoveLeftToProfileMenu: () -> Void
+    let focusRequest: Int
 
     @StateObject private var bookmarkViewModel = MediaBookmarksViewModel.shared
+    @FocusState private var focusedTarget: FocusTarget?
 
     private let columns = Array(
         repeating: GridItem(.fixed(MediaItemViewView.coverSize.width), spacing: AppTheme.gridSpacing),
@@ -77,6 +90,7 @@ struct MediaSearchContentView: View {
                             }
                             .focusEffectDisabled()
                             .buttonStyle(.borderless)
+                            .focused($focusedTarget, equals: .media(media.id))
                             .onMoveLeftToProfileMenu(isLeadingGridColumn(index), perform: onMoveLeftToProfileMenu)
                         }
                         if viewModel.canLoadMore {
@@ -95,6 +109,11 @@ struct MediaSearchContentView: View {
             .allowsHitTesting(isBlockingOverlayPresented == false)
 
             overlayView
+        }
+        .onChange(of: focusRequest) { _, _ in
+            guard let firstMedia = viewModel.newMedias.first else { return }
+
+            focusedTarget = .media(firstMedia.id)
         }
     }
     

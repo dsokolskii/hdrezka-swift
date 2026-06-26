@@ -2,21 +2,34 @@ import Observation
 import SwiftUI
 
 struct MediaContentView: View {
+    private enum FocusTarget: Hashable {
+        case filter
+        case genre
+        case media(String)
+    }
+
     @State private var viewModel: MediaContentViewModel
 
     @StateObject private var bookmarkViewModel = MediaBookmarksViewModel.shared
     @State private var isFilterMenuPresented = false
     @State private var isGenreMenuPresented = false
     private let onMoveLeftToProfileMenu: () -> Void
+    private let focusRequest: Int
+    @FocusState private var focusedTarget: FocusTarget?
 
     private let columns = Array(
         repeating: GridItem(.fixed(MediaItemViewView.coverSize.width), spacing: AppTheme.gridSpacing),
         count: 5
     )
 
-    init(viewModel: MediaContentViewModel, onMoveLeftToProfileMenu: @escaping () -> Void = {}) {
+    init(
+        viewModel: MediaContentViewModel,
+        onMoveLeftToProfileMenu: @escaping () -> Void = {},
+        focusRequest: Int = 0
+    ) {
         _viewModel = State(initialValue: viewModel)
         self.onMoveLeftToProfileMenu = onMoveLeftToProfileMenu
+        self.focusRequest = focusRequest
     }
     
     var body: some View {
@@ -28,6 +41,9 @@ struct MediaContentView: View {
             overlayView
         }
         .onFirstAppear(refreshTask)
+        .onChange(of: focusRequest) { _, _ in
+            focusEntryControl()
+        }
     }
 
     private func catalogPage(showSubcategoryRail: Bool) -> some View {
@@ -57,6 +73,7 @@ struct MediaContentView: View {
                             }
 //                            .focusEffectDisabled()
                             .buttonStyle(.borderless)
+                            .focused($focusedTarget, equals: .media(media.id))
                             .onMoveLeftToProfileMenu(isLeadingGridColumn(index), perform: onMoveLeftToProfileMenu)
                         }
                     }
@@ -90,6 +107,7 @@ struct MediaContentView: View {
             .buttonStyle(.glass)
             .buttonBorderShape(.capsule)
             .controlSize(.small)
+            .focused($focusedTarget, equals: .filter)
             .onMoveCommand { direction in
                 if direction == .up || direction == .left {
                     onMoveLeftToProfileMenu()
@@ -125,6 +143,7 @@ struct MediaContentView: View {
             .buttonStyle(.glass)
             .buttonBorderShape(.capsule)
             .controlSize(.small)
+            .focused($focusedTarget, equals: .genre)
             .onMoveCommand { direction in
                 if direction == .up || (direction == .left && viewModel.filters.isEmpty) {
                     onMoveLeftToProfileMenu()
@@ -199,6 +218,24 @@ struct MediaContentView: View {
         case .fetchingNextPage:
             false
         }
+    }
+
+    private func focusEntryControl() {
+        if viewModel.filters.isEmpty == false {
+            focusedTarget = .filter
+            return
+        }
+
+        if viewModel.genres.isEmpty == false {
+            focusedTarget = .genre
+            return
+        }
+
+        guard let firstMedia = viewModel.newMedias.first(where: { $0.category != .loadMore }) else {
+            return
+        }
+
+        focusedTarget = .media(firstMedia.id)
     }
 }
 
@@ -384,14 +421,25 @@ final class MediaHomeViewModel {
 }
 
 struct MediaHomeView: View {
+    private enum FocusTarget: Hashable {
+        case media(String)
+    }
+
     @State private var viewModel: MediaHomeViewModel
     @StateObject private var bookmarkViewModel = MediaBookmarksViewModel.shared
 
     private let onMoveLeftToProfileMenu: () -> Void
+    private let focusRequest: Int
+    @FocusState private var focusedTarget: FocusTarget?
 
-    init(viewModel: MediaHomeViewModel, onMoveLeftToProfileMenu: @escaping () -> Void = {}) {
+    init(
+        viewModel: MediaHomeViewModel,
+        onMoveLeftToProfileMenu: @escaping () -> Void = {},
+        focusRequest: Int = 0
+    ) {
         _viewModel = State(initialValue: viewModel)
         self.onMoveLeftToProfileMenu = onMoveLeftToProfileMenu
+        self.focusRequest = focusRequest
     }
 
     var body: some View {
@@ -413,6 +461,11 @@ struct MediaHomeView: View {
             overlayView
         }
         .onFirstAppear(refreshTask)
+        .onChange(of: focusRequest) { _, _ in
+            guard let firstMedia = viewModel.shelves.first?.items.first?.media else { return }
+
+            focusedTarget = .media(firstMedia.id)
+        }
     }
 
     private func shelfSection(_ shelf: MediaHomeShelf) -> some View {
@@ -455,6 +508,7 @@ struct MediaHomeView: View {
                             height: MediaItemViewView.coverSize.height
                         )
                         .buttonStyle(.borderless)
+                        .focused($focusedTarget, equals: .media(media.id))
                         .onMoveLeftToProfileMenu(index == 0, perform: onMoveLeftToProfileMenu)
                     }
                 }

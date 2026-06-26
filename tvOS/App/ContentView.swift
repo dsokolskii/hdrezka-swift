@@ -7,10 +7,14 @@ private enum AppFocusTarget: Hashable {
     case home
     case bookmarks
     case settings
-    case settingsMirror
-    case settingsSave
-    case settingsReset
-    case settingsLogout
+}
+
+private enum ActiveTopLevelScreen {
+    case home
+    case catalog
+    case search
+    case bookmarks
+    case settings
 }
 
 struct ContentView: View {
@@ -69,6 +73,12 @@ struct ContentView: View {
     @State private var isBookmarksPresented = false
     @State private var isSettingsPresented = false
     @State private var navigationRootID = UUID()
+    @State private var selectedPrimaryTab: PrimaryTab = .home
+    @State private var homeFocusRequest = 0
+    @State private var catalogFocusRequest = 0
+    @State private var searchFocusRequest = 0
+    @State private var bookmarksFocusRequest = 0
+    @State private var settingsFocusRequest = 0
     @FocusState private var focusedProfileMenuItem: AppFocusTarget?
 
     init(viewModel: ContentViewModel) {
@@ -122,7 +132,7 @@ struct ContentView: View {
         ZStack {
             NavigationStack {
                 ZStack {
-                    TabView {
+                    TabView(selection: $selectedPrimaryTab) {
                         ForEach(primaryTabs) { tab in
                             switch tab {
                             case .home:
@@ -130,8 +140,10 @@ struct ContentView: View {
                                     viewModel: MediaHomeViewModel(
                                         mediaRepository: container.mediaRepository
                                     ),
-                                    onMoveLeftToProfileMenu: focusProfileMenuButton
+                                    onMoveLeftToProfileMenu: focusProfileMenuButton,
+                                    focusRequest: homeFocusRequest
                                 )
+                                .tag(tab)
                                 .tabItem {
                                     Text(tab.title)
                                 }
@@ -142,8 +154,10 @@ struct ContentView: View {
                                         filters: category.filters,
                                         genres: category.genres
                                     ),
-                                    onMoveLeftToProfileMenu: focusProfileMenuButton
+                                    onMoveLeftToProfileMenu: focusProfileMenuButton,
+                                    focusRequest: catalogFocusRequest
                                 )
+                                .tag(tab)
                                 .tabItem {
                                     Text(tab.title)
                                 }
@@ -166,14 +180,22 @@ struct ContentView: View {
                 .navigationDestination(isPresented: $isSearchPresented) {
                     MediaSearchView(
                         viewModel: container.makeSearchViewModel(),
-                        onMoveLeftToProfileMenu: focusProfileMenuButton
+                        onMoveLeftToProfileMenu: focusProfileMenuButton,
+                        focusRequest: searchFocusRequest
                     )
                 }
                 .navigationDestination(isPresented: $isBookmarksPresented) {
-                    MediaBookmarksView(onMoveLeftToProfileMenu: focusProfileMenuButton)
+                    MediaBookmarksView(
+                        onMoveLeftToProfileMenu: focusProfileMenuButton,
+                        focusRequest: bookmarksFocusRequest
+                    )
                 }
                 .navigationDestination(isPresented: $isSettingsPresented) {
-                    SettingsView(onMirrorChanged: handleMirrorChanged)
+                    SettingsView(
+                        onMoveLeftToProfileMenu: focusProfileMenuButton,
+                        focusRequest: settingsFocusRequest,
+                        onMirrorChanged: handleMirrorChanged
+                    )
                 }
             }
             .id(navigationRootID)
@@ -214,8 +236,8 @@ struct ContentView: View {
             profileMenuButton
                 .zIndex(1)
         }
-            .offset(Self.profileButtonOffset)
-            .zIndex(2)
+        .offset(Self.profileButtonOffset)
+        .zIndex(2)
     }
 
     private var tabCategories: [CategoryList] {
@@ -271,6 +293,10 @@ struct ContentView: View {
         .frame(width: Self.profileMenuAvatarSlotSize, height: Self.profileMenuAvatarSlotSize)
         .disabled(isBlockingOverlayPresented)
         .focused($focusedProfileMenuItem, equals: .profileButton)
+        .onMoveCommand { direction in
+            guard isProfileMenuPresented == false, direction == .right else { return }
+            moveFocusIntoActiveScreen()
+        }
     }
 
     private var profileMenuOverlay: some View {
@@ -294,7 +320,7 @@ struct ContentView: View {
             VStack(alignment: .leading, spacing: 14) {
                 profileMenuItem(title: "Поиск", systemImage: "magnifyingglass", focusTarget: .search) {
                     closeProfileMenu()
-                    focusedProfileMenuItem = nil
+                    focusedProfileMenuItem = .profileButton
                     isBookmarksPresented = false
                     isSettingsPresented = false
                     isSearchPresented = true
@@ -306,7 +332,7 @@ struct ContentView: View {
 
                 profileMenuItem(title: "Закладки", systemImage: "bookmark", focusTarget: .bookmarks) {
                     closeProfileMenu()
-                    focusedProfileMenuItem = nil
+                    focusedProfileMenuItem = .profileButton
                     isSearchPresented = false
                     isSettingsPresented = false
                     isBookmarksPresented = true
@@ -397,12 +423,14 @@ struct ContentView: View {
     private func focusProfileMenuButton() {
         guard isBlockingOverlayPresented == false else { return }
 
-        focusedProfileMenuItem = nil
+        Task { @MainActor in
+            focusedProfileMenuItem = .profileButton
+        }
     }
 
     private func navigateToSettings() {
         closeProfileMenu()
-        focusedProfileMenuItem = nil
+        focusedProfileMenuItem = .profileButton
         isSearchPresented = false
         isBookmarksPresented = false
         isSettingsPresented = true
@@ -410,10 +438,12 @@ struct ContentView: View {
 
     private func navigateHome() {
         closeProfileMenu()
+        focusedProfileMenuItem = .profileButton
         isSearchPresented = false
         isBookmarksPresented = false
         isSettingsPresented = false
         navigationRootID = UUID()
+        selectedPrimaryTab = .home
     }
 
     private func handleMirrorChanged() {
@@ -432,6 +462,42 @@ struct ContentView: View {
             true
         case .fetchingNextPage:
             false
+        }
+    }
+
+    private var activeTopLevelScreen: ActiveTopLevelScreen {
+        if isSettingsPresented {
+            return .settings
+        }
+
+        if isBookmarksPresented {
+            return .bookmarks
+        }
+
+        if isSearchPresented {
+            return .search
+        }
+
+        switch selectedPrimaryTab {
+        case .home:
+            return .home
+        case .category:
+            return .catalog
+        }
+    }
+
+    private func moveFocusIntoActiveScreen() {
+        switch activeTopLevelScreen {
+        case .home:
+            homeFocusRequest += 1
+        case .catalog:
+            catalogFocusRequest += 1
+        case .search:
+            searchFocusRequest += 1
+        case .bookmarks:
+            bookmarksFocusRequest += 1
+        case .settings:
+            settingsFocusRequest += 1
         }
     }
 
@@ -589,8 +655,7 @@ private struct AuthorizationView: View {
 
 private struct SettingsView: View {
     private enum FocusTarget: Hashable {
-        case mirror
-        case save
+        case editMirror
         case reset
         case logout
     }
@@ -598,9 +663,13 @@ private struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AuthorizationViewModel.self) private var authorizationViewModel
 
+    let onMoveLeftToProfileMenu: () -> Void
+    let focusRequest: Int
     let onMirrorChanged: () -> Void
 
     @State private var mirror = ConstantsApi.host
+    @State private var mirrorDraft = ConstantsApi.host
+    @State private var isMirrorEditorPresented = false
     @State private var statusMessage: String?
     @FocusState private var focusedTarget: FocusTarget?
 
@@ -609,56 +678,7 @@ private struct SettingsView: View {
             ScreenBackground()
 
             VStack(alignment: .leading, spacing: 28) {
-                VStack(alignment: .leading, spacing: 18) {
-                    Text("Зеркало")
-                        .font(.system(size: 42, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
-
-                    HStack(spacing: 14) {
-                        TextField(
-                            "",
-                            text: $mirror,
-                            prompt: Text(ConstantsApi.defaultHost).foregroundStyle(.white.opacity(0.5))
-                        )
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                        .keyboardType(.URL)
-                        .textContentType(.URL)
-                        .focused($focusedTarget, equals: .mirror)
-
-                        Button {
-                            saveMirror()
-                        } label: {
-                            Label("Сохранить", systemImage: "checkmark")
-                                .frame(minWidth: 190)
-                        }
-                        .buttonStyle(.glassProminent)
-                        .buttonBorderShape(.capsule)
-                        .focused($focusedTarget, equals: .save)
-
-                        Button {
-                            resetMirror()
-                        } label: {
-                            Label("Сбросить", systemImage: "arrow.counterclockwise")
-                                .frame(minWidth: 170)
-                        }
-                        .buttonStyle(.glass)
-                        .buttonBorderShape(.capsule)
-                        .focused($focusedTarget, equals: .reset)
-                    }
-
-                    Text("По умолчанию: \(ConstantsApi.defaultHost)")
-                        .font(.callout)
-                        .foregroundStyle(.white.opacity(0.64))
-
-                    if let statusMessage {
-                        Text(statusMessage)
-                            .font(.callout.weight(.medium))
-                            .foregroundStyle(.white.opacity(0.82))
-                    }
-                }
-                .padding(28)
-                .glassEffect(in: .rect(cornerRadius: 28))
+                settingsCard
 
                 Button(role: .destructive) {
                     authorizationViewModel.logout()
@@ -671,15 +691,101 @@ private struct SettingsView: View {
                 .buttonBorderShape(.capsule)
                 .controlSize(.large)
                 .focused($focusedTarget, equals: .logout)
+                .onMoveLeftToProfileMenu(true, perform: onMoveLeftToProfileMenu)
+
+                Spacer(minLength: 0)
             }
-            .frame(maxWidth: 1040, alignment: .leading)
-            .padding(.horizontal, AppTheme.pagePadding)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .padding(.leading, AppTheme.pagePadding)
+            .padding(.trailing, AppTheme.pagePadding)
             .padding(.vertical, 54)
         }
         .navigationTitle("Настройки")
         .onAppear {
-            focusedTarget = .mirror
+            Task { @MainActor in
+                focusedTarget = .editMirror
+            }
         }
+        .onChange(of: focusRequest) { _, _ in
+            focusedTarget = .editMirror
+        }
+        .alert("Зеркало", isPresented: $isMirrorEditorPresented) {
+            TextField("Домен зеркала", text: $mirrorDraft)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .keyboardType(.URL)
+                .textContentType(.URL)
+
+            Button("Сохранить") {
+                saveMirrorDraft()
+                focusedTarget = .editMirror
+            }
+
+            Button("Отмена", role: .cancel) {
+                mirrorDraft = mirror
+                focusedTarget = .editMirror
+            }
+        } message: {
+            Text("Введите домен зеркала HDRezka.")
+        }
+    }
+
+    private var settingsCard: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            Text("Зеркало")
+                .font(.system(size: 42, weight: .bold, design: .rounded))
+                .foregroundStyle(.white)
+
+            HStack(alignment: .top, spacing: 18) {
+                Button {
+                    mirrorDraft = mirror
+                    isMirrorEditorPresented = true
+                } label: {
+                    Label("Изменить зеркало", systemImage: "pencil")
+                        .frame(minWidth: 320, alignment: .leading)
+                }
+                .buttonStyle(.glassProminent)
+                .buttonBorderShape(.capsule)
+                .focused($focusedTarget, equals: .editMirror)
+                .onMoveLeftToProfileMenu(true, perform: onMoveLeftToProfileMenu)
+
+                Button {
+                    resetMirror()
+                } label: {
+                    Label("Сбросить", systemImage: "arrow.counterclockwise")
+                        .frame(minWidth: 240, alignment: .leading)
+                }
+                .buttonStyle(.glass)
+                .buttonBorderShape(.capsule)
+                .focused($focusedTarget, equals: .reset)
+            }
+            .focusSection()
+
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Текущее зеркало")
+                    .font(.callout.weight(.medium))
+                    .foregroundStyle(.white.opacity(0.58))
+
+                Text(mirror)
+                    .font(.system(size: 28, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.white)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
+            }
+
+            Text("По умолчанию: \(ConstantsApi.defaultHost)")
+                .font(.callout)
+                .foregroundStyle(.white.opacity(0.64))
+
+            if let statusMessage {
+                Text(statusMessage)
+                    .font(.callout.weight(.medium))
+                    .foregroundStyle(.white.opacity(0.82))
+            }
+        }
+        .frame(maxWidth: 760, alignment: .leading)
+        .padding(28)
+        .glassEffect(in: .rect(cornerRadius: 28))
     }
 
     private func saveMirror() {
@@ -698,6 +804,11 @@ private struct SettingsView: View {
         } else {
             statusMessage = "Это зеркало уже используется"
         }
+    }
+
+    private func saveMirrorDraft() {
+        mirror = mirrorDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+        saveMirror()
     }
 
     private func resetMirror() {

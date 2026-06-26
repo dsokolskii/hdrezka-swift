@@ -13,14 +13,16 @@ struct MediaBookmarksView: View {
     @FocusState private var focusedTarget: FocusTarget?
 
     private let onMoveLeftToProfileMenu: () -> Void
+    private let focusRequest: Int
 
     private let columns = Array(
         repeating: GridItem(.fixed(MediaItemViewView.coverSize.width), spacing: AppTheme.gridSpacing),
         count: 5
     )
 
-    init(onMoveLeftToProfileMenu: @escaping () -> Void = {}) {
+    init(onMoveLeftToProfileMenu: @escaping () -> Void = {}, focusRequest: Int = 0) {
         self.onMoveLeftToProfileMenu = onMoveLeftToProfileMenu
+        self.focusRequest = focusRequest
     }
 
     var body: some View {
@@ -66,6 +68,9 @@ struct MediaBookmarksView: View {
             }
         } message: {
             Text(viewModel.actionErrorMessage ?? "Попробуйте еще раз.")
+        }
+        .onChange(of: focusRequest) { _, _ in
+            focusFirstBookmarkControl()
         }
     }
 
@@ -261,6 +266,20 @@ struct MediaBookmarksView: View {
         if let selectedFolderID = viewModel.selectedFolderID {
             await viewModel.load(folderID: selectedFolderID)
         }
+    }
+
+    private func focusFirstBookmarkControl() {
+        if let firstFolder = viewModel.folders.first {
+            focusedTarget = .folder(firstFolder.id)
+            return
+        }
+
+        if selectedMedias.isEmpty == false, let firstMedia = selectedMedias.first {
+            focusedTarget = .media(firstMedia.id)
+            return
+        }
+
+        focusedTarget = .createFolder
     }
 }
 
