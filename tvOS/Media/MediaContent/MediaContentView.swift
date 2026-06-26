@@ -450,7 +450,6 @@ struct MediaHomeView: View {
                         shelfSection(shelf)
                     }
                 }
-                .padding(.horizontal, AppTheme.pagePadding)
                 .padding(.top, 34)
                 .padding(.bottom, 48)
             }
@@ -482,6 +481,7 @@ struct MediaHomeView: View {
                         .foregroundStyle(.white)
                 }
             }
+            .padding(.horizontal, AppTheme.pagePadding)
 
             ScrollView(.horizontal) {
                 LazyHStack(spacing: AppTheme.gridSpacing) {
@@ -512,6 +512,7 @@ struct MediaHomeView: View {
                         .onMoveLeftToProfileMenu(index == 0, perform: onMoveLeftToProfileMenu)
                     }
                 }
+                .padding(.leading, AppTheme.pagePadding)
                 .padding(.vertical, 10)
             }
             .scrollIndicators(.hidden)

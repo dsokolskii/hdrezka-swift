@@ -71,8 +71,7 @@ struct MediaSearchContentView: View {
                 VStack(alignment: .leading, spacing: 30) {
                     SectionHeader(
                         eyebrow: "Поиск",
-                        title: "Найти фильм или сериал",
-                        subtitle: "Результаты выглядят как единая витрина: крупные постеры, мягкий свет и быстрые действия."
+                        title: "Найти фильм или сериал"
                     )
 
                     LazyVGrid(columns: columns, alignment: .center, spacing: AppTheme.gridSpacing) {
