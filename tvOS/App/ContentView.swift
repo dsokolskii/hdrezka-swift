@@ -692,12 +692,9 @@ private struct SettingsView: View {
                 .controlSize(.large)
                 .focused($focusedTarget, equals: .logout)
                 .onMoveLeftToProfileMenu(true, perform: onMoveLeftToProfileMenu)
-
-                Spacer(minLength: 0)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            .padding(.leading, AppTheme.pagePadding)
-            .padding(.trailing, AppTheme.pagePadding)
+            .frame(maxWidth: 1040, alignment: .leading)
+            .padding(.horizontal, AppTheme.pagePadding)
             .padding(.vertical, 54)
         }
         .navigationTitle("Настройки")
@@ -736,7 +733,19 @@ private struct SettingsView: View {
                 .font(.system(size: 42, weight: .bold, design: .rounded))
                 .foregroundStyle(.white)
 
-            HStack(alignment: .top, spacing: 18) {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Текущее зеркало")
+                    .font(.callout.weight(.medium))
+                    .foregroundStyle(.white.opacity(0.58))
+
+                Text(mirror)
+                    .font(.system(size: 28, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.white)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
+            }
+
+            HStack(alignment: .center, spacing: 18) {
                 Button {
                     mirrorDraft = mirror
                     isMirrorEditorPresented = true
@@ -761,18 +770,6 @@ private struct SettingsView: View {
             }
             .focusSection()
 
-            VStack(alignment: .leading, spacing: 10) {
-                Text("Текущее зеркало")
-                    .font(.callout.weight(.medium))
-                    .foregroundStyle(.white.opacity(0.58))
-
-                Text(mirror)
-                    .font(.system(size: 28, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.85)
-            }
-
             Text("По умолчанию: \(ConstantsApi.defaultHost)")
                 .font(.callout)
                 .foregroundStyle(.white.opacity(0.64))
@@ -783,7 +780,7 @@ private struct SettingsView: View {
                     .foregroundStyle(.white.opacity(0.82))
             }
         }
-        .frame(maxWidth: 760, alignment: .leading)
+        .frame(width: 1040, alignment: .leading)
         .padding(28)
         .glassEffect(in: .rect(cornerRadius: 28))
     }
