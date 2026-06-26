@@ -261,24 +261,6 @@ struct MediaBookmarksView: View {
         if let selectedFolderID = viewModel.selectedFolderID {
             await viewModel.load(folderID: selectedFolderID)
         }
-
-        focusInitialElement()
-    }
-
-    private func focusInitialElement() {
-        Task { @MainActor in
-            try? await Task.sleep(nanoseconds: 120_000_000)
-
-            if let selectedFolderID = viewModel.selectedFolderID {
-                focusedTarget = .folder(selectedFolderID)
-            } else if let firstFolderID = viewModel.folders.first?.id {
-                focusedTarget = .folder(firstFolderID)
-            } else if let firstMediaID = selectedMedias.first?.id {
-                focusedTarget = .media(firstMediaID)
-            } else {
-                focusedTarget = .createFolder
-            }
-        }
     }
 }
 

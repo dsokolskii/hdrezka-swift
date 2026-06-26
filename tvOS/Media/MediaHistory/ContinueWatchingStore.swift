@@ -87,7 +87,7 @@ struct ContinueWatchingPayload: Codable {
 
 enum ContinueWatchingStore {
     private static let fileName = "continue-watching.json"
-    private static let appGroupIdentifier = "group.com.dsoft.rezka-player"
+    private static let appGroupIdentifier = ""
     private static let sharedDefaultsKey = "continue-watching.payload"
 
     static func load() -> ContinueWatchingPayload? {

@@ -1,6 +1,18 @@
 import SwiftUI
 import TVServices
 
+private enum AppFocusTarget: Hashable {
+    case profileButton
+    case search
+    case home
+    case bookmarks
+    case settings
+    case settingsMirror
+    case settingsSave
+    case settingsReset
+    case settingsLogout
+}
+
 struct ContentView: View {
     private static let profileButtonOffset = CGSize(width: -20, height: -12)
     private static let profileMenuPadding: CGFloat = 18
@@ -21,12 +33,27 @@ struct ContentView: View {
         let playbackPosition: Double
     }
 
-    private enum ProfileMenuFocusTarget: Hashable {
-        case profileButton
-        case search
+    private enum PrimaryTab: Hashable, Identifiable {
         case home
-        case bookmarks
-        case settings
+        case category(CategoryList)
+
+        var id: String {
+            switch self {
+            case .home:
+                "home"
+            case .category(let category):
+                "category-\(category.type.rawValue)-\(category.id.uuidString)"
+            }
+        }
+
+        var title: String {
+            switch self {
+            case .home:
+                "Главная"
+            case .category(let category):
+                category.name
+            }
+        }
     }
 
     @Environment(AppContainer.self) private var container
@@ -42,7 +69,7 @@ struct ContentView: View {
     @State private var isBookmarksPresented = false
     @State private var isSettingsPresented = false
     @State private var navigationRootID = UUID()
-    @FocusState private var focusedProfileMenuItem: ProfileMenuFocusTarget?
+    @FocusState private var focusedProfileMenuItem: AppFocusTarget?
 
     init(viewModel: ContentViewModel) {
         _viewModel = State(initialValue: viewModel)
@@ -96,18 +123,31 @@ struct ContentView: View {
             NavigationStack {
                 ZStack {
                     TabView {
-                        ForEach(tabCategories, id: \.type) { category in
-                            MediaContentView(
-                                viewModel: container.makeMediaContentViewModel(
-                                    category: category.type,
-                                    filters: category.filters,
-                                    genres: category.genres
-                                ),
-                                onMoveLeftToProfileMenu: focusProfileMenuButton
-                            )
+                        ForEach(primaryTabs) { tab in
+                            switch tab {
+                            case .home:
+                                MediaHomeView(
+                                    viewModel: MediaHomeViewModel(
+                                        mediaRepository: container.mediaRepository
+                                    ),
+                                    onMoveLeftToProfileMenu: focusProfileMenuButton
+                                )
                                 .tabItem {
-                                    Text(category.name)
+                                    Text(tab.title)
                                 }
+                            case .category(let category):
+                                MediaContentView(
+                                    viewModel: container.makeMediaContentViewModel(
+                                        category: category.type,
+                                        filters: category.filters,
+                                        genres: category.genres
+                                    ),
+                                    onMoveLeftToProfileMenu: focusProfileMenuButton
+                                )
+                                .tabItem {
+                                    Text(tab.title)
+                                }
+                            }
                         }
                     }
                     .allowsHitTesting(isBlockingOverlayPresented == false)
@@ -182,6 +222,10 @@ struct ContentView: View {
         viewModel.categories.filter { $0.type != .search }
     }
 
+    private var primaryTabs: [PrimaryTab] {
+        [.home] + tabCategories.map(PrimaryTab.category)
+    }
+
     @ViewBuilder
     private var overlayView: some View {
         switch viewModel.phase {
@@ -201,7 +245,7 @@ struct ContentView: View {
     private var progress: some View {
         LoadingPanel()
     }
-    
+
     private func refreshTask() {
         Task {
             await viewModel.load()
@@ -269,11 +313,7 @@ struct ContentView: View {
                 }
 
                 profileMenuItem(title: "Настройки", systemImage: "gearshape", focusTarget: .settings) {
-                    closeProfileMenu()
-                    focusedProfileMenuItem = nil
-                    isSearchPresented = false
-                    isBookmarksPresented = false
-                    isSettingsPresented = true
+                    navigateToSettings()
                 }
             }
             .focusSection()
@@ -286,7 +326,7 @@ struct ContentView: View {
     private func profileMenuItem(
         title: String,
         systemImage: String,
-        focusTarget: ProfileMenuFocusTarget,
+        focusTarget: AppFocusTarget,
         isEnabled: Bool = true,
         action: @escaping () -> Void
     ) -> some View {
@@ -357,7 +397,15 @@ struct ContentView: View {
     private func focusProfileMenuButton() {
         guard isBlockingOverlayPresented == false else { return }
 
-        focusedProfileMenuItem = .profileButton
+        focusedProfileMenuItem = nil
+    }
+
+    private func navigateToSettings() {
+        closeProfileMenu()
+        focusedProfileMenuItem = nil
+        isSearchPresented = false
+        isBookmarksPresented = false
+        isSettingsPresented = true
     }
 
     private func navigateHome() {
@@ -629,9 +677,6 @@ private struct SettingsView: View {
             .padding(.vertical, 54)
         }
         .navigationTitle("Настройки")
-        .onExitCommand {
-            dismiss()
-        }
         .onAppear {
             focusedTarget = .mirror
         }

@@ -5,7 +5,7 @@ enum ConstantsApi {
     static let defaultHost = "rezka.fi"
     static let domain = "RezkaAPI"
     static let iCloudKey = ""
-    static let appGroupIdentifier = "group.com.dsoft.rezka-player"
+    static let appGroupIdentifier = ""
 
     private static let hostStorageKey = "rezka.api.host"
 

@@ -4,7 +4,7 @@ import TVServices
 
 @objc(TopShelfContentProvider)
 public final class TopShelfContentProvider: TVTopShelfContentProvider {
-    private let logger = Logger(subsystem: "com.dsoft.rezka-player.topshelf", category: "TopShelf")
+    private let logger = Logger(subsystem: "com.isoft.rezka-player.tvos.topshelf.codex0625", category: "TopShelf")
     private let maxTopShelfItems = 6
 
     public override func loadTopShelfContent(completionHandler: @escaping (TVTopShelfContent?) -> Void) {
