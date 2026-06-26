@@ -5,7 +5,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PROJECT="$ROOT_DIR/rezka-player.xcodeproj"
 SCHEME="rezka-player"
-BUNDLE_ID="com.dsoft.rezka-player"
+BUNDLE_ID="com.isoft.rezka-player"
 DEFAULT_DEVICE_NAME="Apple TV 4K (3rd generation)"
 DEVICE_QUERY="${1:-$DEFAULT_DEVICE_NAME}"
 
@@ -47,10 +47,6 @@ fi
 xcrun simctl install "$DEVICE_ID" "$APP_PATH"
 xcrun simctl terminate "$DEVICE_ID" "$BUNDLE_ID" >/dev/null 2>&1 || true
 xcrun simctl launch "$DEVICE_ID" "$BUNDLE_ID"
-
-if ! xcrun simctl get_app_container "$DEVICE_ID" "$BUNDLE_ID" groups | grep -q "group.com.dsoft.rezka-player"; then
-  echo "warning: app group 'group.com.dsoft.rezka-player' is unavailable in this build"
-fi
 
 "$ROOT_DIR/scripts/simulator_proxy.sh" ensure
 
