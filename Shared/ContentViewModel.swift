@@ -4,17 +4,18 @@ import Observation
 @MainActor
 @Observable
 final class ContentViewModel {
-    var phase = DataFetchPhase<NavigationPayload>.fetching
+    var phase: DataFetchPhase<NavigationPayload>
     private(set) var isFetching = true
 
     private let navigationRepository: NavigationRepository
 
     init(navigationRepository: NavigationRepository) {
         self.navigationRepository = navigationRepository
+        self.phase = .fetchingNextPage(ContentViewModel.defaultPayload)
     }
 
     var categories: [CategoryList] {
-        (phase.value?.categories ?? []).normalizedForNavigation
+        Self.mergedCategories(from: phase.value).normalizedForNavigation
     }
 
     var userProfile: RezkaUserProfile? {
@@ -24,11 +25,13 @@ final class ContentViewModel {
     func load() async {
         if Task.isCancelled { return }
 
-        if let navigation = await navigationRepository.cachedNavigation() {
-            phase = .fetchingNextPage(navigation)
+        let initialPayload: NavigationPayload
+        if let cached = await navigationRepository.cachedNavigation() {
+            initialPayload = cached
         } else {
-            phase = .fetching
+            initialPayload = Self.defaultPayload
         }
+        phase = .fetchingNextPage(initialPayload)
 
         await loadNavigation()
     }
@@ -46,10 +49,39 @@ final class ContentViewModel {
             if let currentNavigation = phase.value, currentNavigation.categories.isEmpty == false {
                 phase = .success(currentNavigation)
             } else {
-                phase = .failure(error)
+                phase = .success(Self.defaultPayload)
             }
             isFetching = false
         }
+    }
+
+    // MARK: - Default categories
+
+    /// Локальные категории, которые показываются сразу при запуске, не дожидаясь
+    /// ответа сервера. Серверные данные (с фильтрами и жанрами) мерджатся поверх,
+    /// когда навигация успешно загружается.
+    private static let defaultCategories: [CategoryList] = [
+        CategoryList(type: .search, items: [], name: "Поиск", iconName: "magnifyingglass"),
+        CategoryList(type: .films, items: [], filters: [], genres: [], name: "Фильмы", iconName: ""),
+        CategoryList(type: .series, items: [], filters: [], genres: [], name: "Сериалы", iconName: ""),
+        CategoryList(type: .animation, items: [], filters: [], genres: [], name: "Аниме", iconName: ""),
+        CategoryList(type: .cartoons, items: [], filters: [], genres: [], name: "Мультфильмы", iconName: ""),
+        CategoryList(type: .new, items: [], filters: [], genres: [], name: "Новинки", iconName: "")
+    ]
+
+    static let defaultPayload = NavigationPayload(categories: defaultCategories, userProfile: nil)
+
+    /// Объединяет серверные категории с локальными дефолтными: серверные имеют
+    /// приоритет (в них есть фильтры и жанры), а недостающие типы берутся из дефолта.
+    static func mergedCategories(from payload: NavigationPayload?) -> [CategoryList] {
+        let serverCategories = payload?.categories ?? []
+        guard serverCategories.isEmpty == false else {
+            return defaultCategories
+        }
+
+        let serverTypes = Set(serverCategories.map { $0.type })
+        let missing = defaultCategories.filter { serverTypes.contains($0.type) == false }
+        return serverCategories + missing
     }
 }
 

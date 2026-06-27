@@ -36,6 +36,7 @@
 		6F092EB36BCC29FA0D4E102C /* ContinueWatchingStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1E8AF7C41F297889D9830BA /* ContinueWatchingStore.swift */; };
 		71C07B859C6FDDB3A96F4285 /* ContinueWatchingHistorySync.swift in Sources */ = {isa = PBXBuildFile; fileRef = C25C55DC71E05D7F9572D6B3 /* ContinueWatchingHistorySync.swift */; };
 		72607BA9CF7697D156F530C9 /* TopShelfContentProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFA15C05F17F7A10F096BB3C /* TopShelfContentProvider.swift */; };
+		D55630D0C20A7126AA88B589 /* TopShelf.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 9A3D7869137E0C84BB566D05 /* TopShelf.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy,); }; };
 		78DAE1B73CC2438AB8B7E2A1 /* icon-tv.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A5C7590E2959CD6300E8506B /* icon-tv.xcassets */; };
 		7B8AAE8D4D2F4A6CA9EF1A31 /* icon-watch.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7B8AAE8C4D2F4A6CA9EF1A31 /* icon-watch.xcassets */; };
 		851874FDFACB0027DC42ED58 /* ConstantsApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A741D42902E10500B884F7 /* ConstantsApi.swift */; };
@@ -663,10 +664,12 @@
 				A5B79D3D28ABF0D5006CAF8E /* Sources */,
 				A5B79D3E28ABF0D5006CAF8E /* Frameworks */,
 				A5B79D3F28ABF0D5006CAF8E /* Resources */,
+				EA19BAF7D2BB105C32AE2FD5 /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				681CB359A10D38CFFE66D19A /* PBXTargetDependency */,
 			);
 			name = "rezka-player";
 			packageProductDependencies = (
@@ -732,6 +735,30 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		EA19BAF7D2BB105C32AE2FD5 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				D55630D0C20A7126AA88B589 /* TopShelf.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXContainerItemProxy section */
+		847D8EEC57BB35AA71D1EE19 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A5B79D1A28ABEF68006CAF8E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C88BBFE17E1A807F8A32D1B4;
+			remoteInfo = TopShelf;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		406AA22871C7307BA76FCC08 /* Resources */ = {
@@ -895,6 +922,14 @@
 		};
 /* End PBXVariantGroup section */
 
+/* Begin PBXTargetDependency section */
+		681CB359A10D38CFFE66D19A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C88BBFE17E1A807F8A32D1B4 /* TopShelf */;
+			targetProxy = 847D8EEC57BB35AA71D1EE19 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
 		43D47D11F7D62242C38BC408 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -908,7 +943,7 @@
 				DEVELOPMENT_TEAM = 4MHXU239UG;
 				INFOPLIST_FILE = tvOS/TopShelf/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited)";
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.isoft.rezka-player.topShelfAddon";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
@@ -985,7 +1020,7 @@
 				COPY_PHASE_STRIP = NO;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = 2HWMDDD4G2;
+				DEVELOPMENT_TEAM = 4MHXU239UG;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -1050,7 +1085,7 @@
 				COPY_PHASE_STRIP = NO;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = 2HWMDDD4G2;
+				DEVELOPMENT_TEAM = 4MHXU239UG;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -1172,7 +1207,7 @@
 				DEVELOPMENT_TEAM = 4MHXU239UG;
 				INFOPLIST_FILE = tvOS/TopShelf/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited)";
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.isoft.rezka-player.topShelfAddon";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
