@@ -1,6 +1,5 @@
 import SwiftUI
 import ImageIO
-import UIKit
 
 struct CacheAsyncImage<Content>: View where Content: View {
     private let url: URL
@@ -102,7 +101,7 @@ struct CacheAsyncImage<Content>: View where Content: View {
 
 enum CacheAsyncImagePhase {
     case empty
-    case success(UIImage)
+    case success(PlatformImage)
     case failure(Error)
 }
 
@@ -129,7 +128,7 @@ private struct CacheImageKey: Hashable {
 private actor CacheImagePipeline {
     static let shared = CacheImagePipeline()
 
-    private var inFlight: [CacheImageKey: Task<UIImage, Error>] = [:]
+    private var inFlight: [CacheImageKey: Task<PlatformImage, Error>] = [:]
 
     func image(
         for cacheKey: CacheImageKey,
@@ -138,7 +137,7 @@ private actor CacheImagePipeline {
         targetSize: CGSize?,
         maxPixelSize: Int?,
         scale: CGFloat
-    ) async throws -> UIImage {
+    ) async throws -> PlatformImage {
         if let cachedImage = ImageCache[cacheKey] {
             return cachedImage
         }
@@ -206,14 +205,14 @@ private actor CacheImageWorkLimiter {
 }
 
 private enum CacheImageDecoder {
-    static func decodeImage(from data: Data, targetSize: CGSize?, maxPixelSize: Int?, scale: CGFloat) throws -> UIImage {
+    static func decodeImage(from data: Data, targetSize: CGSize?, maxPixelSize: Int?, scale: CGFloat) throws -> PlatformImage {
         guard
             maxPixelSize != nil || (targetSize?.width ?? 0) > 0 && (targetSize?.height ?? 0) > 0
         else {
-            guard let image = UIImage(data: data) else {
+            guard let image = platformImage(from: data) else {
                 throw URLError(.cannotDecodeContentData)
             }
-            return image.preparingForDisplay() ?? image
+            return image
         }
 
         guard let source = CGImageSourceCreateWithData(
@@ -235,7 +234,7 @@ private enum CacheImageDecoder {
             throw URLError(.cannotDecodeContentData)
         }
 
-        return UIImage(cgImage: image, scale: scale, orientation: .up)
+        return platformImage(from: image, scale: scale)
     }
 }
 
@@ -277,35 +276,15 @@ private struct PosterSlot: View {
     }
 
 }
-
-private struct PosterImageView: UIViewRepresentable {
-    let image: UIImage
-
-    func makeUIView(context: Context) -> UIImageView {
-        let imageView = UIImageView()
-        imageView.backgroundColor = .clear
-        imageView.clipsToBounds = true
-        imageView.contentMode = .scaleAspectFill
-        imageView.layer.drawsAsynchronously = true
-        return imageView
-    }
-
-    func updateUIView(_ imageView: UIImageView, context: Context) {
-        if imageView.image !== image {
-            imageView.image = image
-        }
-    }
-}
-
 fileprivate enum ImageCache {
-    private static let cache: NSCache<NSString, UIImage> = {
-        let cache = NSCache<NSString, UIImage>()
+    private static let cache: NSCache<NSString, PlatformImage> = {
+        let cache = NSCache<NSString, PlatformImage>()
         cache.countLimit = 400
         cache.totalCostLimit = 96 * 1024 * 1024
         return cache
     }()
 
-    static subscript(key: CacheImageKey) -> UIImage? {
+    static subscript(key: CacheImageKey) -> PlatformImage? {
         get { cache.object(forKey: key.value as NSString) }
         set {
             guard let newValue else {
@@ -314,15 +293,5 @@ fileprivate enum ImageCache {
             }
             cache.setObject(newValue, forKey: key.value as NSString, cost: newValue.cacheCost)
         }
-    }
-}
-
-private extension UIImage {
-    var cacheCost: Int {
-        if let cgImage {
-            return cgImage.bytesPerRow * cgImage.height
-        }
-
-        return Int(size.width * size.height * scale * scale * 4)
     }
 }

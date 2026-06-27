@@ -63,7 +63,7 @@ struct SeasonsData: Codable {
             let seasonEpisodeLists = try doc.select("[id^=simple-episodes-list-]")
 
             for seasonList in seasonEpisodeLists {
-                let listID = try seasonList.id()
+                let listID = seasonList.id()
                 let seasonIDString = listID.replacingOccurrences(of: "simple-episodes-list-", with: "")
                 guard let seasonID = Int(seasonIDString) else {
                     continue

@@ -24,6 +24,7 @@
 		357E9C122C3291F0AA7DDCA6 /* DetailedMedia.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A7416928F738F500B884F7 /* DetailedMedia.swift */; };
 		3E04FE6C9C0C243197D4B124 /* CacheEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = A598C17B28B2A5670034717C /* CacheEntry.swift */; };
 		4050DE67FB14B166719E3002 /* AppContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 287960752FA90283006FC3CF /* AppContainer.swift */; };
+		46A1000128AB000000000001 /* icon-mac.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F100001428AB000000000001 /* icon-mac.xcassets */; };
 		47B1A78773768ABCBD48671C /* SwiftSoup in Frameworks */ = {isa = PBXBuildFile; productRef = A5DF36E728EC9AC600E0C5C0 /* SwiftSoup */; };
 		4AA43CA72B8D950B003CA4FF /* MediaSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AA43CA42B8D950B003CA4FF /* MediaSettings.swift */; };
 		50C0685DEDD9590D59198AF2 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 33B25DD449EC97CF0BF12E09 /* Foundation.framework */; };
@@ -117,6 +118,16 @@
 		D94ED60B714BFD5B48641541 /* Repositories.swift in Sources */ = {isa = PBXBuildFile; fileRef = 287960792FA90283006FC3CF /* Repositories.swift */; };
 		E7AE68E88EDE533BC5344B99 /* Category.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BB8F4D28AEB5200070CC77 /* Category.swift */; };
 		E8227F064DE7E6434301DB51 /* WatchMediaDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66712C6123133D99AD94B665 /* WatchMediaDetailView.swift */; };
+		F100000128AB000000000001 /* AppChrome.swift in Sources */ = {isa = PBXBuildFile; fileRef = F100000028AB000000000001 /* AppChrome.swift */; };
+		F100000328AB000000000001 /* ProfileAvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F100000228AB000000000001 /* ProfileAvatarView.swift */; };
+		F100000528AB000000000001 /* TopShelfNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = F100000428AB000000000001 /* TopShelfNotifier.swift */; };
+		F100000728AB000000000001 /* View+PlatformNavigation.swift in Sources */ = {isa = PBXBuildFile; fileRef = F100000628AB000000000001 /* View+PlatformNavigation.swift */; };
+		F100000928AB000000000001 /* TVAppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F100000828AB000000000001 /* TVAppView.swift */; };
+		F100000B28AB000000000001 /* TVImageSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = F100000A28AB000000000001 /* TVImageSupport.swift */; };
+		F100000D28AB000000000001 /* MacAppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F100000C28AB000000000001 /* MacAppView.swift */; };
+		F100000F28AB000000000001 /* MacMediaContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F100000E28AB000000000001 /* MacMediaContentView.swift */; };
+		F100001128AB000000000001 /* MacMediaSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F100001028AB000000000001 /* MacMediaSearchView.swift */; };
+		F100001328AB000000000001 /* MacImageSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = F100001228AB000000000001 /* MacImageSupport.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -201,6 +212,18 @@
 		D4E9C7132F02000200B00101 /* RezkaBookmarksApi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RezkaBookmarksApi.swift; sourceTree = "<group>"; };
 		D4E9C7152F02000300B00101 /* BookmarksRezkaAPIResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarksRezkaAPIResponse.swift; sourceTree = "<group>"; };
 		DFA15C05F17F7A10F096BB3C /* TopShelfContentProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TopShelfContentProvider.swift; sourceTree = "<group>"; };
+		F100000028AB000000000001 /* AppChrome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppChrome.swift; sourceTree = "<group>"; };
+		F100000228AB000000000001 /* ProfileAvatarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileAvatarView.swift; sourceTree = "<group>"; };
+		F100000428AB000000000001 /* TopShelfNotifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopShelfNotifier.swift; sourceTree = "<group>"; };
+		F100000628AB000000000001 /* View+PlatformNavigation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+PlatformNavigation.swift"; sourceTree = "<group>"; };
+		F100000828AB000000000001 /* TVAppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TVAppView.swift; sourceTree = "<group>"; };
+		F100000A28AB000000000001 /* TVImageSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TVImageSupport.swift; sourceTree = "<group>"; };
+		F100000C28AB000000000001 /* MacAppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacAppView.swift; sourceTree = "<group>"; };
+		F100000E28AB000000000001 /* MacMediaContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacMediaContentView.swift; sourceTree = "<group>"; };
+		F100001028AB000000000001 /* MacMediaSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacMediaSearchView.swift; sourceTree = "<group>"; };
+		F100001228AB000000000001 /* MacImageSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacImageSupport.swift; sourceTree = "<group>"; };
+		F100001428AB000000000001 /* icon-mac.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "icon-mac.xcassets"; sourceTree = "<group>"; };
+		F100001528AB000000000001 /* macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "macOS.entitlements"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -283,9 +306,12 @@
 		2858B6542FA8FFC700328B1C /* App */ = {
 			isa = PBXGroup;
 			children = (
+				F100000028AB000000000001 /* AppChrome.swift */,
 				287960752FA90283006FC3CF /* AppContainer.swift */,
 				287960792FA90283006FC3CF /* Repositories.swift */,
 				2879607D2FA90283006FC3CF /* AuthorizationViewModel.swift */,
+				F100000228AB000000000001 /* ProfileAvatarView.swift */,
+				F100000428AB000000000001 /* TopShelfNotifier.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -330,6 +356,19 @@
 				33B25DD449EC97CF0BF12E09 /* Foundation.framework */,
 			);
 			name = tvOS;
+			sourceTree = "<group>";
+		};
+		F100001628AB000000000001 /* macOS */ = {
+			isa = PBXGroup;
+			children = (
+				F100000C28AB000000000001 /* MacAppView.swift */,
+				F100000E28AB000000000001 /* MacMediaContentView.swift */,
+				F100001028AB000000000001 /* MacMediaSearchView.swift */,
+				F100001228AB000000000001 /* MacImageSupport.swift */,
+				F100001428AB000000000001 /* icon-mac.xcassets */,
+				F100001528AB000000000001 /* macOS.entitlements */,
+			);
+			path = macOS;
 			sourceTree = "<group>";
 		};
 		9498AC9E5E0C44CEAEB607B7 /* MediaCategories */ = {
@@ -482,6 +521,7 @@
 				A5A741DC2902EB3E00B884F7 /* Strings+Filter.swift */,
 				A5C2236129053CCC002B49D5 /* CaseIterable+Index.swift */,
 				A5C2236929056FBB002B49D5 /* String+Base64.swift */,
+				F100000628AB000000000001 /* View+PlatformNavigation.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -547,6 +587,7 @@
 				A505F1CE2E096C390021FDFC /* rezka-player.entitlements */,
 				A5A7419C28F88E6C00B884F7 /* rezka-player-Info.plist */,
 				A50D8FE128ABF838008C66AA /* Localizations */,
+				F100001628AB000000000001 /* macOS */,
 				A5B79D1E28ABEF68006CAF8E /* Shared */,
 				A5B79D4228ABF0D5006CAF8E /* tvOS */,
 				A5B79D2728ABEF6A006CAF8E /* Products */,
@@ -588,6 +629,8 @@
 				A559FEA229117EDB0004380B /* Player */,
 				BBE9023739D44632ACFEF6EC /* Stores */,
 				A5B79D2128ABEF6A006CAF8E /* Assets.xcassets */,
+				F100000828AB000000000001 /* TVAppView.swift */,
+				F100000A28AB000000000001 /* TVImageSupport.swift */,
 				A5C7590E2959CD6300E8506B /* icon-tv.xcassets */,
 				20D032A5E189A97B033F4AA6 /* TopShelf */,
 			);
@@ -664,12 +707,10 @@
 				A5B79D3D28ABF0D5006CAF8E /* Sources */,
 				A5B79D3E28ABF0D5006CAF8E /* Frameworks */,
 				A5B79D3F28ABF0D5006CAF8E /* Resources */,
-				EA19BAF7D2BB105C32AE2FD5 /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				681CB359A10D38CFFE66D19A /* PBXTargetDependency */,
 			);
 			name = "rezka-player";
 			packageProductDependencies = (
@@ -782,6 +823,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A50D8FE828ABF838008C66AA /* rezka-player--InfoPlist.strings in Resources */,
+				46A1000128AB000000000001 /* icon-mac.xcassets in Resources */,
 				A5C7590F2959CD6300E8506B /* icon-tv.xcassets in Resources */,
 				A5B79D4F28ABF10C006CAF8E /* Assets.xcassets in Resources */,
 			);
@@ -809,8 +851,10 @@
 				A5A741DB2902E5AA00B884F7 /* NavigationRezkaApiResponse.swift in Sources */,
 				A5D130FC296F208600383D08 /* Focusable.swift in Sources */,
 				A598C18328B2A5670034717C /* CacheEntry.swift in Sources */,
+				F100001328AB000000000001 /* MacImageSupport.swift in Sources */,
 				A5A741E32902F48400B884F7 /* ContentViewModel.swift in Sources */,
 				A5A741C22902DC0200B884F7 /* SubcategoryListView.swift in Sources */,
+				F100000528AB000000000001 /* TopShelfNotifier.swift in Sources */,
 				A5BB8F5528AEB7AB0070CC77 /* MediaRezkaAPIResponse.swift in Sources */,
 				A5A741BA2902D97200B884F7 /* CategoriesListItem.swift in Sources */,
 				A5A741D22902DEBA00B884F7 /* ApiConstants.swift in Sources */,
@@ -819,25 +863,31 @@
 				A5A7417F28F7F0A200B884F7 /* ImagePreviewView.swift in Sources */,
 				A5A7418328F7F1CA00B884F7 /* CacheAsyncImage.swift in Sources */,
 				A5B79D5128ABF115006CAF8E /* rezka_playerApp.swift in Sources */,
+				F100000928AB000000000001 /* TVAppView.swift in Sources */,
 				A598C17828B2A4A60034717C /* DataFetchPhase.swift in Sources */,
 				2879607B2FA90283006FC3CF /* Repositories.swift in Sources */,
+				F100000128AB000000000001 /* AppChrome.swift in Sources */,
 				A5A7419328F82F9100B884F7 /* Dictionary+SwiftUI.swift in Sources */,
 				A57D2DB628AEB2CD00E98298 /* Media.swift in Sources */,
 				4AA43CA72B8D950B003CA4FF /* MediaSettings.swift in Sources */,
 				A598C18028B2A5670034717C /* Cache.swift in Sources */,
 				A50D8FD628ABF6AC008C66AA /* MediaCategoriesViewModel.swift in Sources */,
+				F100000B28AB000000000001 /* TVImageSupport.swift in Sources */,
 				A50D8FDC28ABF7CF008C66AA /* MediaBookmarksViewModel.swift in Sources */,
 				D4E9C7122F02000100B00101 /* MediaBookmarksView.swift in Sources */,
 				D4E9C7142F02000200B00101 /* RezkaBookmarksApi.swift in Sources */,
 				D4E9C7162F02000300B00101 /* BookmarksRezkaAPIResponse.swift in Sources */,
 				A5BB8F5928AEB8920070CC77 /* RezkaMediaApi.swift in Sources */,
+				F100000D28AB000000000001 /* MacAppView.swift in Sources */,
 				A57D2DB228AEB11600E98298 /* MediaItemViewView.swift in Sources */,
 				A59DD3BF2DB18C17000E3B0D /* HLSURLRouter.swift in Sources */,
 				A5DF36E028EC871B00E0C5C0 /* MediaContentViewModel.swift in Sources */,
 				A5C2236C29056FBB002B49D5 /* String+Base64.swift in Sources */,
 				A5A741B02902D86600B884F7 /* CategoryList.swift in Sources */,
+				F100000F28AB000000000001 /* MacMediaContentView.swift in Sources */,
 				A5A741C62902DC2A00B884F7 /* ListItemView.swift in Sources */,
 				A5BB8F5028AEB5200070CC77 /* Category.swift in Sources */,
+				F100000728AB000000000001 /* View+PlatformNavigation.swift in Sources */,
 				A5D13100296F2C0E00383D08 /* View+FirstAppear.swift in Sources */,
 				A57D2DBF28AEB39D00E98298 /* DataStore.swift in Sources */,
 				A598C18628B2A5670034717C /* CacheImplementation.swift in Sources */,
@@ -848,9 +898,11 @@
 				2879607E2FA90283006FC3CF /* AuthorizationViewModel.swift in Sources */,
 				A5F6AB64291D68DE001D21FA /* MediaSearchContentViewModel.swift in Sources */,
 				287960772FA90283006FC3CF /* AppContainer.swift in Sources */,
+				F100000328AB000000000001 /* ProfileAvatarView.swift in Sources */,
 				A50D8FE028ABF7E4008C66AA /* MediaSearchView.swift in Sources */,
 				A50D8FD128ABF5E7008C66AA /* MediaContentView.swift in Sources */,
 				A5BB8F4C28AEB4E30070CC77 /* CategoryMedias.swift in Sources */,
+				F100001128AB000000000001 /* MacMediaSearchView.swift in Sources */,
 				A5B79D5028ABF110006CAF8E /* ContentView.swift in Sources */,
 				A5A7416C28F738F500B884F7 /* DetailedMedia.swift in Sources */,
 				A5A741CE2902DE8B00B884F7 /* RezkaNavigationApi.swift in Sources */,
@@ -1110,9 +1162,11 @@
 		A5B79D4D28ABF0D6006CAF8E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "Brand Assets";
+				"ASSETCATALOG_COMPILER_APPICON_NAME[sdk=appletvos*]" = "Brand Assets";
+				"ASSETCATALOG_COMPILER_APPICON_NAME[sdk=macosx*]" = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = "rezka-player.entitlements";
+				"CODE_SIGN_ENTITLEMENTS[sdk=appletvos*]" = "rezka-player.entitlements";
+				"CODE_SIGN_ENTITLEMENTS[sdk=macosx*]" = macOS/macOS.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 4MHXU239UG;
@@ -1126,21 +1180,29 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.isoft.rezka-player";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = appletvos;
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "appletvos appletvsimulator macosx";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				TARGETED_DEVICE_FAMILY = 3;
+				"TARGETED_DEVICE_FAMILY[sdk=appletvos*]" = 3;
 			};
 			name = Debug;
 		};
 		A5B79D4E28ABF0D6006CAF8E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "Brand Assets";
+				"ASSETCATALOG_COMPILER_APPICON_NAME[sdk=appletvos*]" = "Brand Assets";
+				"ASSETCATALOG_COMPILER_APPICON_NAME[sdk=macosx*]" = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = "rezka-player.entitlements";
+				"CODE_SIGN_ENTITLEMENTS[sdk=appletvos*]" = "rezka-player.entitlements";
+				"CODE_SIGN_ENTITLEMENTS[sdk=macosx*]" = macOS/macOS.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 4MHXU239UG;
@@ -1154,12 +1216,18 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.isoft.rezka-player";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = appletvos;
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "appletvos appletvsimulator macosx";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				TARGETED_DEVICE_FAMILY = 3;
+				"TARGETED_DEVICE_FAMILY[sdk=appletvos*]" = 3;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;

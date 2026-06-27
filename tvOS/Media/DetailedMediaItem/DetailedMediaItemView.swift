@@ -153,17 +153,21 @@ struct DetailedMediaItemView: View {
             }
         }
         .scrollIndicators(.hidden)
-        .fullScreenCover(isPresented: $isPlayerPresented, onDismiss: {
-            viewModel.refreshPlaybackState()
-        }, content: {
-            PlaybackPlayerView(
-                viewModel: viewModel,
-                isPresented: $isPlayerPresented,
-                playerStartTime: $playerStartTime
-            )
-            .edgesIgnoringSafeArea(.all)
-            .transition(.move(edge: .bottom))
-        })
+        .platformPlaybackPresentation(
+            isPresented: $isPlayerPresented,
+            onDismiss: {
+                viewModel.refreshPlaybackState()
+            },
+            content: {
+                PlaybackPlayerView(
+                    viewModel: viewModel,
+                    isPresented: $isPlayerPresented,
+                    playerStartTime: $playerStartTime
+                )
+                .ignoresSafeArea()
+                .transition(.move(edge: .bottom))
+            }
+        )
     }
 
     @ViewBuilder
@@ -1315,6 +1319,40 @@ private struct PlaybackPlayerView: View {
         playerStartTime = position
         viewModel.persistPlaybackProgress(position: position, duration: duration, force: true)
         viewModel.setQuality(quality)
+    }
+}
+
+private struct PlatformPlaybackPresentationModifier<PresentedContent: View>: ViewModifier {
+    @Binding var isPresented: Bool
+    let onDismiss: () -> Void
+    let presentedContent: () -> PresentedContent
+
+    func body(content: Content) -> some View {
+        #if os(macOS)
+        content.sheet(isPresented: $isPresented, onDismiss: onDismiss) {
+            presentedContent()
+        }
+        #else
+        content.fullScreenCover(isPresented: $isPresented, onDismiss: onDismiss) {
+            presentedContent()
+        }
+        #endif
+    }
+}
+
+private extension View {
+    func platformPlaybackPresentation<PresentedContent: View>(
+        isPresented: Binding<Bool>,
+        onDismiss: @escaping () -> Void,
+        @ViewBuilder content: @escaping () -> PresentedContent
+    ) -> some View {
+        modifier(
+            PlatformPlaybackPresentationModifier(
+                isPresented: isPresented,
+                onDismiss: onDismiss,
+                presentedContent: content
+            )
+        )
     }
 }
 

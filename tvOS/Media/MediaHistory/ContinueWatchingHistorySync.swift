@@ -1,6 +1,5 @@
 import Foundation
 import CryptoKit
-import TVServices
 
 enum ContinueWatchingEligibility {
     private static let minimalPlaybackPositionForContinue = 20.0
@@ -39,7 +38,7 @@ enum ContinueWatchingHistorySync {
         )
 
         ContinueWatchingStore.save(payload)
-        TVTopShelfContentProvider.topShelfContentDidChange()
+        notifyTopShelfContentChanged()
 
         Task.detached(priority: .utility) {
             await prefetchMissingCoversAndRewritePayload(items: payload.items)
@@ -221,7 +220,7 @@ enum ContinueWatchingHistorySync {
             )
         )
 
-        TVTopShelfContentProvider.topShelfContentDidChange()
+        notifyTopShelfContentChanged()
     }
 
     static func refreshFromStoredHistory() async {

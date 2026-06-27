@@ -1,12 +1,15 @@
 import AVKit
 import SwiftUI
 
+#if os(macOS)
+typealias Representable = NSViewRepresentable
+typealias PlayerContainerType = AVPlayerView
+#else
 typealias Representable = UIViewControllerRepresentable
-typealias ViewControllerType = AVPlayerViewController
+typealias PlayerContainerType = AVPlayerViewController
+#endif
 
 struct PlayerViewController: Representable {
-    typealias NSViewControllerType = ViewControllerType
-
     struct TransportControlTranslation: Identifiable {
         let id: Int
         let title: String
@@ -56,7 +59,7 @@ struct PlayerViewController: Representable {
                     FileManager.default.createFile(atPath: logURL.path, contents: data)
                 } else if let handle = try? FileHandle(forWritingTo: logURL) {
                     defer { try? handle.close() }
-                    try? handle.seekToEnd()
+                    handle.seekToEndOfFile()
                     _ = try? handle.write(contentsOf: data)
                 }
             }
@@ -71,9 +74,9 @@ struct PlayerViewController: Representable {
             detach()
             guard let item = player.currentItem else { return }
             self.player = player
-            self.progressCallback = onProgress
-            self.failureCallback = onFailure
-            self.didReportFailure = false
+            progressCallback = onProgress
+            failureCallback = onFailure
+            didReportFailure = false
 
             statusObservation = item.observe(\.status, options: [.initial, .new]) { item, _ in
                 Self.log("PLAYER item.status=\(item.status.rawValue) error=\(item.error?.localizedDescription ?? "nil")")
@@ -123,7 +126,10 @@ struct PlayerViewController: Representable {
                 onFinish?()
             }
 
-            timeObserver = player.addPeriodicTimeObserver(forInterval: CMTime(seconds: 1, preferredTimescale: 600), queue: .main) { [weak self] _ in
+            timeObserver = player.addPeriodicTimeObserver(
+                forInterval: CMTime(seconds: 1, preferredTimescale: 600),
+                queue: .main
+            ) { [weak self] _ in
                 guard let self else { return }
                 self.reportProgress()
             }
@@ -175,7 +181,7 @@ struct PlayerViewController: Representable {
             }
         }
     }
-    
+
     let videoURL: URL?
     let initialTime: Double
     let onProgress: ((Double, Double) -> Void)?
@@ -198,7 +204,7 @@ struct PlayerViewController: Representable {
         self.onFailure = onFailure
         self.transportControls = transportControls
     }
-    
+
     private func makePlayerItem(for playbackURL: URL) -> AVPlayerItem {
         var options: [String: Any] = [
             AVURLAssetPreferPreciseDurationAndTimingKey: false
@@ -229,11 +235,12 @@ struct PlayerViewController: Representable {
             return nil
         }
 
-#if targetEnvironment(simulator)
+        #if targetEnvironment(simulator)
         if ProcessInfo.processInfo.environment["REZKA_SIMULATOR_PROXY"] == "1" {
             return simulatorProxyURL(for: videoURL)
         }
-#endif
+        #endif
+
         return videoURL
     }
 
@@ -241,7 +248,65 @@ struct PlayerViewController: Representable {
         Coordinator()
     }
 
-    func makeUIViewController(context: Context) -> NSViewControllerType {
+    #if os(macOS)
+    func makeNSView(context: Context) -> PlayerContainerType {
+        let view = AVPlayerView()
+        view.controlsStyle = .floating
+        if let playbackURL {
+            Coordinator.log("PLAYER open url=\(playbackURL.absoluteString)")
+            Coordinator.log("PLAYER host=\(playbackURL.host ?? "nil") scheme=\(playbackURL.scheme ?? "nil") path=\(playbackURL.path)")
+            Coordinator.log("PLAYER debug file=\(Coordinator.logURL.path)")
+        }
+        view.player = makePlayer()
+        if let player = view.player {
+            configureTransportControls(for: view, player: player)
+            context.coordinator.attach(to: player, onProgress: onProgress, onFinish: onFinish, onFailure: onFailure)
+            startPlayback(player: player, at: initialTime)
+        }
+        return view
+    }
+
+    func updateNSView(_ playerView: PlayerContainerType, context: Context) {
+        updatePlayback(in: playerView, context: context)
+    }
+
+    static func dismantleNSView(_ playerView: PlayerContainerType, coordinator: Coordinator) {
+        coordinator.detach()
+        playerView.player?.pause()
+        playerView.player?.replaceCurrentItem(with: nil)
+        playerView.player = nil
+    }
+
+    private func updatePlayback(in view: AVPlayerView, context: Context) {
+        guard let player = view.player else { return }
+        guard let playbackURL else {
+            player.pause()
+            player.replaceCurrentItem(with: nil)
+            return
+        }
+
+        configureTransportControls(for: view, player: player)
+
+        if currentAssetURL(of: player) == playbackURL {
+            if let currentItem = player.currentItem {
+                applyMetadata(to: currentItem)
+            }
+            return
+        }
+
+        let item = makePlayerItem(for: playbackURL)
+        player.pause()
+        player.replaceCurrentItem(with: item)
+        context.coordinator.attach(to: player, onProgress: onProgress, onFinish: onFinish, onFailure: onFailure)
+        startPlayback(player: player, at: initialTime)
+    }
+
+    private func configureTransportControls(for view: AVPlayerView, player: AVPlayer) {
+        guard transportControls?.mediaTitle != nil else { return }
+        view.controlsStyle = .floating
+    }
+    #else
+    func makeUIViewController(context: Context) -> PlayerContainerType {
         let controller = AVPlayerViewController()
         controller.modalPresentationStyle = .fullScreen
         if let playbackURL {
@@ -258,11 +323,11 @@ struct PlayerViewController: Representable {
         return controller
     }
 
-    func updateUIViewController(_ playerController: NSViewControllerType, context: Context) {
+    func updateUIViewController(_ playerController: PlayerContainerType, context: Context) {
         updatePlayback(in: playerController, context: context)
     }
 
-    static func dismantleUIViewController(_ uiViewController: AVPlayerViewController, coordinator: Coordinator) {
+    static func dismantleUIViewController(_ uiViewController: PlayerContainerType, coordinator: Coordinator) {
         coordinator.detach()
         uiViewController.player?.pause()
         uiViewController.player?.replaceCurrentItem(with: nil)
@@ -291,25 +356,6 @@ struct PlayerViewController: Representable {
         player.replaceCurrentItem(with: item)
         context.coordinator.attach(to: player, onProgress: onProgress, onFinish: onFinish, onFailure: onFailure)
         startPlayback(player: player, at: initialTime)
-    }
-
-    private func currentAssetURL(of player: AVPlayer) -> URL? {
-        guard let asset = player.currentItem?.asset as? AVURLAsset else { return nil }
-        return asset.url
-    }
-
-    private func startPlayback(player: AVPlayer, at time: Double) {
-        if time > 0, time.isFinite {
-            player.seek(
-                to: CMTime(seconds: time, preferredTimescale: 600),
-                toleranceBefore: .zero,
-                toleranceAfter: .zero
-            ) { _ in
-                player.play()
-            }
-        } else {
-            player.play()
-        }
     }
 
     private func seekAction(title: String, seconds: Double, player: AVPlayer) -> UIAction {
@@ -419,8 +465,32 @@ struct PlayerViewController: Representable {
 
         controller.transportBarCustomMenuItems = items
     }
+    #endif
+
+    private func currentAssetURL(of player: AVPlayer) -> URL? {
+        guard let asset = player.currentItem?.asset as? AVURLAsset else { return nil }
+        return asset.url
+    }
+
+    private func startPlayback(player: AVPlayer, at time: Double) {
+        if time > 0, time.isFinite {
+            player.seek(
+                to: CMTime(seconds: time, preferredTimescale: 600),
+                toleranceBefore: .zero,
+                toleranceAfter: .zero
+            ) { _ in
+                player.play()
+            }
+        } else {
+            player.play()
+        }
+    }
 
     private func applyMetadata(to item: AVPlayerItem) {
+        #if os(macOS)
+        _ = item
+        return
+        #else
         guard let transportControls else {
             item.externalMetadata = []
             return
@@ -434,6 +504,7 @@ struct PlayerViewController: Representable {
             metadata.append(metadataItem(identifier: .iTunesMetadataTrackSubTitle, value: subtitle))
         }
         item.externalMetadata = metadata
+        #endif
     }
 
     private func metadataItem(identifier: AVMetadataIdentifier, value: String) -> AVMetadataItem {
@@ -443,7 +514,7 @@ struct PlayerViewController: Representable {
         item.extendedLanguageTag = "ru-RU"
         return item.copy() as? AVMetadataItem ?? item
     }
-    
+
     private func simulatorProxyURL(for url: URL) -> URL? {
         guard let scheme = url.scheme,
               let host = url.host else {
