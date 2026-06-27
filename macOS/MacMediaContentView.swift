@@ -18,7 +18,9 @@ struct MacMediaContentView: View {
     var body: some View {
         ZStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 30) {
+                VStack(alignment: .leading, spacing: 24) {
+                    pageHeader
+
                     subcategoryRail
 
                     if let featuredMedia {
@@ -58,14 +60,26 @@ struct MacMediaContentView: View {
 
             overlayView
         }
-        .navigationTitle(pageTitle)
-        .navigationSubtitle(viewModel.selectedFilter?.name ?? "")
         .onFirstAppear(refreshTask)
+    }
+
+    private var pageHeader: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(pageTitle)
+                .font(.system(size: 28, weight: .bold, design: .rounded))
+                .foregroundStyle(.white)
+
+            if let filterName = viewModel.selectedFilter?.name {
+                Text(filterName)
+                    .font(.callout.weight(.medium))
+                    .foregroundStyle(.secondary)
+            }
+        }
     }
 
     private var columns: [GridItem] {
         [
-            GridItem(.adaptive(minimum: 210, maximum: 260), spacing: AppTheme.gridSpacing, alignment: .top)
+            GridItem(.adaptive(minimum: 150, maximum: 170), spacing: AppTheme.gridSpacing, alignment: .top)
         ]
     }
 
@@ -165,13 +179,13 @@ struct MacMediaContentView: View {
 
     private func featuredMediaHero(_ media: Media) -> some View {
         ZStack(alignment: .bottomLeading) {
-            RoundedRectangle(cornerRadius: 30, style: .continuous)
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
                 .fill(AppTheme.panelStrong)
 
             if let coverURL = media.coverURL {
                 CacheAsyncImage(
                     url: coverURL,
-                    targetSize: CGSize(width: 1600, height: 700),
+                    targetSize: CGSize(width: 1600, height: 600),
                     session: RezkaURLSession.shared,
                     requestHeaders: ApiConstants.imageHeaders
                 ) { phase in
@@ -188,14 +202,14 @@ struct MacMediaContentView: View {
             )
 
             HStack(alignment: .bottom, spacing: 24) {
-                VStack(alignment: .leading, spacing: 14) {
+                VStack(alignment: .leading, spacing: 10) {
                     Text(media.isSeries ? "Сериал" : "Фильм")
                         .font(.caption.weight(.bold))
                         .tracking(1.6)
                         .foregroundStyle(.white.opacity(0.72))
 
                     Text(media.title)
-                        .font(.system(size: 40, weight: .bold, design: .rounded))
+                        .font(.system(size: 28, weight: .bold, design: .rounded))
                         .foregroundStyle(.white)
                         .lineLimit(3)
 
@@ -220,13 +234,13 @@ struct MacMediaContentView: View {
 
                 Spacer(minLength: 0)
             }
-            .padding(32)
+            .padding(28)
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 360)
-        .clipShape(RoundedRectangle(cornerRadius: 30, style: .continuous))
+        .frame(height: 280)
+        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
         .overlay {
-            RoundedRectangle(cornerRadius: 30, style: .continuous)
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
                 .strokeBorder(.white.opacity(0.12), lineWidth: 1)
         }
     }

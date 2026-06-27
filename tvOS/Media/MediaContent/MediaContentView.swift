@@ -486,12 +486,12 @@ struct MediaHomeView: View {
     var body: some View {
         ZStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 38) {
+                VStack(alignment: .leading, spacing: homeShelfSpacing) {
                     ForEach(viewModel.shelves) { shelf in
                         shelfSection(shelf)
                     }
                 }
-                .padding(.top, 34)
+                .padding(.top, homeTopPadding)
                 .padding(.bottom, 48)
             }
             .scrollIndicators(.hidden)
@@ -515,17 +515,33 @@ struct MediaHomeView: View {
         }
     }
 
+    private var homeShelfSpacing: CGFloat {
+        #if os(macOS)
+        28
+        #else
+        38
+        #endif
+    }
+
+    private var homeTopPadding: CGFloat {
+        #if os(macOS)
+        24
+        #else
+        34
+        #endif
+    }
+
     private func shelfSection(_ shelf: MediaHomeShelf) -> some View {
-        VStack(alignment: .leading, spacing: 18) {
+        VStack(alignment: .leading, spacing: shelfHeaderSpacing) {
             HStack(spacing: 16) {
                 Image(systemName: shelf.descriptor.category.homeShelfIcon)
-                    .font(.title3.weight(.semibold))
+                    .font(.system(size: shelfIconSize, weight: .semibold))
                     .foregroundStyle(.white.opacity(0.88))
-                    .frame(width: 54, height: 54)
+                    .frame(width: shelfIconSlot, height: shelfIconSlot)
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(shelf.descriptor.title)
-                        .font(.system(size: 34, weight: .bold, design: .rounded))
+                        .font(.system(size: shelfTitleSize, weight: .bold, design: .rounded))
                         .foregroundStyle(.white)
                 }
             }
@@ -576,11 +592,44 @@ struct MediaHomeView: View {
                     }
                 }
                 .padding(.leading, AppTheme.pagePadding)
+                .padding(.trailing, AppTheme.pagePadding)
                 .padding(.vertical, 10)
             }
             .scrollIndicators(.hidden)
             .focusSection()
         }
+    }
+
+    private var shelfHeaderSpacing: CGFloat {
+        #if os(macOS)
+        14
+        #else
+        18
+        #endif
+    }
+
+    private var shelfIconSize: CGFloat {
+        #if os(macOS)
+        18
+        #else
+        20
+        #endif
+    }
+
+    private var shelfIconSlot: CGFloat {
+        #if os(macOS)
+        34
+        #else
+        54
+        #endif
+    }
+
+    private var shelfTitleSize: CGFloat {
+        #if os(macOS)
+        22
+        #else
+        34
+        #endif
     }
 
     @ViewBuilder

@@ -16,7 +16,7 @@ enum AppTheme {
 
     static var pagePadding: CGFloat {
         #if os(macOS)
-        32
+        28
         #else
         72
         #endif
@@ -32,7 +32,7 @@ enum AppTheme {
 
     static var gridSpacing: CGFloat {
         #if os(macOS)
-        28
+        18
         #else
         42
         #endif
@@ -40,7 +40,7 @@ enum AppTheme {
 
     static var cardCorner: CGFloat {
         #if os(macOS)
-        24
+        14
         #else
         28
         #endif

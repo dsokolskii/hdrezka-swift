@@ -19,5 +19,8 @@ struct rezka_playerApp: App {
                 .environment(container)
                 .environment(authorizationViewModel)
         }
+        #if os(macOS)
+        .windowStyle(.hiddenTitleBar)
+        #endif
     }
 }

@@ -5,7 +5,6 @@ struct PlatformAppView: View {
     private enum SidebarDestination: Hashable {
         case home
         case search
-        case continueWatching
         case bookmarks
         case settings
         case category(Category)
@@ -39,9 +38,12 @@ struct PlatformAppView: View {
     }
 
     private var authorizedContent: some View {
-        NavigationSplitView {
+        HStack(spacing: 0) {
             sidebar
-        } detail: {
+
+            Divider()
+                .overlay(AppTheme.hairline.opacity(0.4))
+
             NavigationStack {
                 ZStack {
                     detailContent
@@ -50,7 +52,7 @@ struct PlatformAppView: View {
                 .screenBackground()
             }
         }
-        .navigationSplitViewStyle(.balanced)
+        .frame(minWidth: 960, minHeight: 600)
         .onFirstAppear {
             syncSidebarSelection()
             refreshTask()
@@ -61,40 +63,99 @@ struct PlatformAppView: View {
     }
 
     private var sidebar: some View {
-        List(selection: $selectedSidebarDestination) {
-            Section("Медиатека") {
-                Label("Главная", systemImage: "house.fill")
-                    .tag(SidebarDestination.home)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 28) {
+                VStack(alignment: .leading, spacing: 22) {
+                    sectionHeader("Медиатека")
 
-                Label("Поиск", systemImage: "magnifyingglass")
-                    .tag(SidebarDestination.search)
-
-                Label("Продолжить просмотр", systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90")
-                    .tag(SidebarDestination.continueWatching)
-
-                Label("Закладки", systemImage: "bookmark.fill")
-                    .tag(SidebarDestination.bookmarks)
-            }
-
-            Section("Категории") {
-                ForEach(tabCategories, id: \.type) { category in
-                    Label(category.name, systemImage: category.type.sidebarSystemImage)
-                        .tag(SidebarDestination.category(category.type))
+                    VStack(spacing: 4) {
+                        sidebarButton(.home, title: "Главная", systemImage: "house.fill")
+                        sidebarButton(.search, title: "Поиск", systemImage: "magnifyingglass")
+                        sidebarButton(.bookmarks, title: "Закладки", systemImage: "bookmark.fill")
+                    }
                 }
-            }
 
-            Section("Система") {
-                Label("Настройки", systemImage: "slider.horizontal.3")
-                    .tag(SidebarDestination.settings)
+                VStack(alignment: .leading, spacing: 22) {
+                    sectionHeader("Категории")
+
+                    VStack(spacing: 4) {
+                        ForEach(tabCategories, id: \.type) { category in
+                            sidebarButton(
+                                .category(category.type),
+                                title: category.name,
+                                systemImage: category.type.sidebarSystemImage
+                            )
+                        }
+                    }
+                }
+
+                VStack(alignment: .leading, spacing: 22) {
+                    sectionHeader("Система")
+
+                    VStack(spacing: 4) {
+                        sidebarButton(.settings, title: "Настройки", systemImage: "slider.horizontal.3")
+                    }
+                }
+
+                Spacer(minLength: 0)
             }
+            .padding(.horizontal, 16)
+            .padding(.top, 28)
+            .padding(.bottom, 16)
+            .frame(maxWidth: .infinity)
         }
-        .listStyle(.sidebar)
-        .navigationSplitViewColumnWidth(min: 248, ideal: 276)
-        .scrollContentBackground(.hidden)
+        .scrollIndicators(.hidden)
         .background(.ultraThinMaterial)
         .safeAreaInset(edge: .bottom) {
             profileFooter
         }
+        .frame(width: 248)
+    }
+
+    private func sectionHeader(_ title: String) -> some View {
+        Text(title.uppercased())
+            .font(.caption.weight(.bold))
+            .tracking(1.6)
+            .foregroundStyle(.secondary)
+            .padding(.leading, 12)
+    }
+
+    private func sidebarButton(
+        _ destination: SidebarDestination,
+        title: String,
+        systemImage: String
+    ) -> some View {
+        let isSelected = selectedSidebarDestination == destination
+
+        return Button {
+            selectedSidebarDestination = destination
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: systemImage)
+                    .font(.system(size: 15, weight: .semibold))
+                    .frame(width: 22)
+                    .foregroundStyle(isSelected ? .white : .secondary)
+
+                Text(title)
+                    .font(.system(size: 14, weight: isSelected ? .semibold : .medium))
+                    .foregroundStyle(isSelected ? .white : .primary)
+                    .lineLimit(1)
+
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 9)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background {
+                if isSelected {
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(.white.opacity(0.12))
+                } else {
+                    Color.clear
+                }
+            }
+        }
+        .buttonStyle(.plain)
     }
 
     private var profileFooter: some View {
@@ -112,16 +173,17 @@ struct PlatformAppView: View {
             }
         } label: {
             HStack(spacing: 12) {
-                ProfileAvatarView(userProfile: viewModel.userProfile, size: 34)
-                    .frame(width: 34, height: 34)
+                ProfileAvatarView(userProfile: viewModel.userProfile, size: 30)
+                    .frame(width: 30, height: 30)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(profileDisplayName)
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(.primary)
+                        .lineLimit(1)
 
                     Text(ConstantsApi.host)
-                        .font(.caption)
+                        .font(.system(size: 10))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
@@ -129,12 +191,13 @@ struct PlatformAppView: View {
                 Spacer(minLength: 0)
 
                 Image(systemName: "ellipsis.circle")
+                    .font(.system(size: 13))
                     .foregroundStyle(.secondary)
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.bar, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .background(.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
         .menuStyle(.borderlessButton)
         .padding(.horizontal, 12)
@@ -151,9 +214,6 @@ struct PlatformAppView: View {
         case .search:
             MacMediaSearchView(viewModel: container.makeSearchViewModel())
                 .id(SidebarDestination.search)
-        case .continueWatching:
-            MacContinueWatchingView()
-                .id(SidebarDestination.continueWatching)
         case .bookmarks:
             MediaBookmarksView()
                 .id(SidebarDestination.bookmarks)
@@ -216,7 +276,7 @@ struct PlatformAppView: View {
         switch selectedSidebarDestination {
         case .category(let type) where validCategoryTypes.contains(type):
             return
-        case .home, .search, .continueWatching, .bookmarks, .settings:
+        case .home, .search, .bookmarks, .settings:
             return
         default:
             selectedSidebarDestination = .home
@@ -369,7 +429,6 @@ private struct MacSettingsView: View {
             .padding(.vertical, 32)
         }
         .screenBackground()
-        .navigationTitle("Настройки")
     }
 
     private func saveMirror() {

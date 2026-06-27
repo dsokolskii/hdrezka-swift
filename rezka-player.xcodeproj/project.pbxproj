@@ -37,7 +37,7 @@
 		6F092EB36BCC29FA0D4E102C /* ContinueWatchingStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1E8AF7C41F297889D9830BA /* ContinueWatchingStore.swift */; };
 		71C07B859C6FDDB3A96F4285 /* ContinueWatchingHistorySync.swift in Sources */ = {isa = PBXBuildFile; fileRef = C25C55DC71E05D7F9572D6B3 /* ContinueWatchingHistorySync.swift */; };
 		72607BA9CF7697D156F530C9 /* TopShelfContentProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFA15C05F17F7A10F096BB3C /* TopShelfContentProvider.swift */; };
-		D55630D0C20A7126AA88B589 /* TopShelf.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 9A3D7869137E0C84BB566D05 /* TopShelf.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy,); }; };
+		D55630D0C20A7126AA88B589 /* TopShelf.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 9A3D7869137E0C84BB566D05 /* TopShelf.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy,); }; platformFilter = appletvos; };
 		78DAE1B73CC2438AB8B7E2A1 /* icon-tv.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A5C7590E2959CD6300E8506B /* icon-tv.xcassets */; };
 		7B8AAE8D4D2F4A6CA9EF1A31 /* icon-watch.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7B8AAE8C4D2F4A6CA9EF1A31 /* icon-watch.xcassets */; };
 		851874FDFACB0027DC42ED58 /* ConstantsApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A741D42902E10500B884F7 /* ConstantsApi.swift */; };

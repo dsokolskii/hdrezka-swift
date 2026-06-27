@@ -31,7 +31,9 @@ struct MediaBookmarksView: View {
 
             bookmarksContent
         }
+        #if os(tvOS)
         .navigationTitle("Закладки")
+        #endif
         .onFirstAppear {
             Task {
                 await loadInitialBookmarks()
@@ -87,7 +89,13 @@ struct MediaBookmarksView: View {
             }
         default:
             ScrollView {
-                VStack(alignment: .leading, spacing: 28) {
+                VStack(alignment: .leading, spacing: bookmarksSpacing) {
+                    #if os(macOS)
+                    Text("Закладки")
+                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .foregroundStyle(.white)
+                    #endif
+
                     folderToolbar
 
                     if selectedMedias.isEmpty, viewModel.isLoadingBookmarks == false {
@@ -97,11 +105,27 @@ struct MediaBookmarksView: View {
                     }
                 }
                 .padding(.horizontal, AppTheme.pagePadding)
-                .padding(.top, 34)
+                .padding(.top, bookmarksTopPadding)
                 .padding(.bottom, 48)
             }
             .scrollIndicators(.hidden)
         }
+    }
+
+    private var bookmarksSpacing: CGFloat {
+        #if os(macOS)
+        22
+        #else
+        28
+        #endif
+    }
+
+    private var bookmarksTopPadding: CGFloat {
+        #if os(macOS)
+        24
+        #else
+        34
+        #endif
     }
 
     private var folderToolbar: some View {

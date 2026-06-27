@@ -13,7 +13,11 @@ struct MacMediaSearchView: View {
     var body: some View {
         ZStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 30) {
+                VStack(alignment: .leading, spacing: 24) {
+                    pageHeader
+
+                    searchField
+
                     LazyVGrid(columns: columns, alignment: .center, spacing: AppTheme.gridSpacing) {
                         ForEach(viewModel.newMedias, id: \.id) { media in
                             let isBookmarked = bookmarkViewModel.isBookmarked(for: media)
@@ -44,7 +48,6 @@ struct MacMediaSearchView: View {
             .scrollIndicators(.hidden)
             .screenBackground()
             .allowsHitTesting(isBlockingOverlayPresented == false)
-            .searchable(text: $text, prompt: "Поиск по всему каталогу")
             .onChange(of: text) { _, newValue in
                 searchTask?.cancel()
                 searchTask = Task {
@@ -62,14 +65,56 @@ struct MacMediaSearchView: View {
 
             overlayView
         }
-        .navigationTitle("Поиск")
+    }
+
+    private var pageHeader: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Поиск")
+                .font(.system(size: 28, weight: .bold, design: .rounded))
+                .foregroundStyle(.white)
+
+            Text("Найдите фильм или сериал в каталоге")
+                .font(.callout.weight(.medium))
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private var searchField: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(.secondary)
+
+            TextField("Поиск по всему каталогу", text: $text)
+                .textFieldStyle(.plain)
+                .font(.system(size: 15))
+                .autocorrectionDisabled()
+
+            if text.isEmpty == false {
+                Button {
+                    text = ""
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 14))
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 11)
+        .background(.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .strokeBorder(AppTheme.hairline.opacity(0.5), lineWidth: 1)
+        }
     }
 
     @StateObject private var bookmarkViewModel = MediaBookmarksViewModel.shared
 
     private var columns: [GridItem] {
         [
-            GridItem(.adaptive(minimum: 210, maximum: 260), spacing: AppTheme.gridSpacing, alignment: .top)
+            GridItem(.adaptive(minimum: 150, maximum: 170), spacing: AppTheme.gridSpacing, alignment: .top)
         ]
     }
 
