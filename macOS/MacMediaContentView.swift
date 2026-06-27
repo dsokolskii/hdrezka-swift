@@ -79,7 +79,14 @@ struct MacMediaContentView: View {
 
     private var columns: [GridItem] {
         [
-            GridItem(.adaptive(minimum: 150, maximum: 170), spacing: AppTheme.gridSpacing, alignment: .top)
+            GridItem(
+                .adaptive(
+                    minimum: MediaItemViewView.coverSize.width,
+                    maximum: MediaItemViewView.coverSize.width
+                ),
+                spacing: AppTheme.gridSpacing,
+                alignment: .top
+            )
         ]
     }
 
@@ -179,7 +186,7 @@ struct MacMediaContentView: View {
 
     private func featuredMediaHero(_ media: Media) -> some View {
         ZStack(alignment: .bottomLeading) {
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .fill(AppTheme.panelStrong)
 
             if let coverURL = media.coverURL {
@@ -234,13 +241,13 @@ struct MacMediaContentView: View {
 
                 Spacer(minLength: 0)
             }
-            .padding(28)
+            .padding(24)
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 280)
-        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .frame(height: 240)
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         .overlay {
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .strokeBorder(.white.opacity(0.12), lineWidth: 1)
         }
     }

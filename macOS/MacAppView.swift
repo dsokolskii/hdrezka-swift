@@ -1,4 +1,5 @@
 #if os(macOS)
+import AppKit
 import SwiftUI
 
 struct PlatformAppView: View {
@@ -53,6 +54,8 @@ struct PlatformAppView: View {
             }
         }
         .frame(minWidth: 960, minHeight: 600)
+        .background(MacWindowConfigurator())
+        .ignoresSafeArea(.container, edges: .top)
         .onFirstAppear {
             syncSidebarSelection()
             refreshTask()
@@ -100,7 +103,7 @@ struct PlatformAppView: View {
                 Spacer(minLength: 0)
             }
             .padding(.horizontal, 16)
-            .padding(.top, 28)
+            .padding(.top, 54)
             .padding(.bottom, 16)
             .frame(maxWidth: .infinity)
         }
@@ -109,7 +112,7 @@ struct PlatformAppView: View {
         .safeAreaInset(edge: .bottom) {
             profileFooter
         }
-        .frame(width: 248)
+        .frame(width: 232)
     }
 
     private func sectionHeader(_ title: String) -> some View {
@@ -460,6 +463,32 @@ private struct MacSettingsView: View {
         } else {
             statusMessage = "Используется зеркало по умолчанию"
         }
+    }
+}
+
+private struct MacWindowConfigurator: NSViewRepresentable {
+    func makeNSView(context: Context) -> NSView {
+        let view = NSView()
+        DispatchQueue.main.async {
+            configure(view.window)
+        }
+        return view
+    }
+
+    func updateNSView(_ nsView: NSView, context: Context) {
+        DispatchQueue.main.async {
+            configure(nsView.window)
+        }
+    }
+
+    private func configure(_ window: NSWindow?) {
+        guard let window else { return }
+
+        window.titleVisibility = .hidden
+        window.titlebarAppearsTransparent = true
+        window.toolbar = nil
+        window.styleMask.insert(.fullSizeContentView)
+        window.isMovableByWindowBackground = true
     }
 }
 #endif

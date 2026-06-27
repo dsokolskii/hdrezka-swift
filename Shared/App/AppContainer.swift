@@ -47,8 +47,10 @@ final class AppContainer {
         MediaSearchContentViewModel(search: search, mediaRepository: mediaRepository)
     }
 
+    #if !os(watchOS)
     @MainActor
     func makeMediaHomeViewModel() -> MediaHomeViewModel {
         MediaHomeViewModel(mediaRepository: mediaRepository)
     }
+    #endif
 }

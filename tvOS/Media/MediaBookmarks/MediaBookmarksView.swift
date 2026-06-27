@@ -15,10 +15,33 @@ struct MediaBookmarksView: View {
     private let onMoveLeftToProfileMenu: () -> Void
     private let focusRequest: Int
 
-    private let columns = Array(
-        repeating: GridItem(.fixed(MediaItemViewView.coverSize.width), spacing: AppTheme.gridSpacing),
-        count: 5
-    )
+    private var columns: [GridItem] {
+        #if os(macOS)
+        [
+            GridItem(
+                .adaptive(
+                    minimum: MediaItemViewView.coverSize.width,
+                    maximum: MediaItemViewView.coverSize.width
+                ),
+                spacing: AppTheme.gridSpacing,
+                alignment: .top
+            )
+        ]
+        #else
+        Array(
+            repeating: GridItem(.fixed(MediaItemViewView.coverSize.width), spacing: AppTheme.gridSpacing),
+            count: 5
+        )
+        #endif
+    }
+
+    private var focusColumnCount: Int {
+        #if os(macOS)
+        1
+        #else
+        5
+        #endif
+    }
 
     init(onMoveLeftToProfileMenu: @escaping () -> Void = {}, focusRequest: Int = 0) {
         self.onMoveLeftToProfileMenu = onMoveLeftToProfileMenu
@@ -210,7 +233,7 @@ struct MediaBookmarksView: View {
                     }
                     .buttonStyle(.borderless)
                     .focused($focusedTarget, equals: .media(media.id))
-                    .onMoveLeftToProfileMenu(index.isMultiple(of: columns.count), perform: onMoveLeftToProfileMenu)
+                    .onMoveLeftToProfileMenu(index.isMultiple(of: focusColumnCount), perform: onMoveLeftToProfileMenu)
                 }
             }
 

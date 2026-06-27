@@ -114,7 +114,14 @@ struct MacMediaSearchView: View {
 
     private var columns: [GridItem] {
         [
-            GridItem(.adaptive(minimum: 150, maximum: 170), spacing: AppTheme.gridSpacing, alignment: .top)
+            GridItem(
+                .adaptive(
+                    minimum: MediaItemViewView.coverSize.width,
+                    maximum: MediaItemViewView.coverSize.width
+                ),
+                spacing: AppTheme.gridSpacing,
+                alignment: .top
+            )
         ]
     }
 

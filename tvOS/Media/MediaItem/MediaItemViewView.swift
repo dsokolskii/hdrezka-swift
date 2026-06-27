@@ -3,7 +3,7 @@ import SwiftUI
 struct MediaItemViewView: View {
     static var coverSize: CGSize {
         #if os(macOS)
-        CGSize(width: 150, height: 225)
+        CGSize(width: 126, height: 189)
         #else
         CGSize(width: 260, height: 390)
         #endif
@@ -96,7 +96,7 @@ struct MediaItemViewView: View {
 
     private var titleFontSize: CGFloat {
         #if os(macOS)
-        15
+        13
         #else
         23
         #endif
@@ -104,7 +104,7 @@ struct MediaItemViewView: View {
 
     private var subtitleFontSize: CGFloat {
         #if os(macOS)
-        10
+        9
         #else
         13
         #endif
@@ -112,7 +112,7 @@ struct MediaItemViewView: View {
 
     private var badgeFontSize: CGFloat {
         #if os(macOS)
-        9
+        8
         #else
         13
         #endif
@@ -120,7 +120,7 @@ struct MediaItemViewView: View {
 
     private var badgePaddingHorizontal: CGFloat {
         #if os(macOS)
-        6
+        5
         #else
         10
         #endif
@@ -128,7 +128,7 @@ struct MediaItemViewView: View {
 
     private var badgePaddingVertical: CGFloat {
         #if os(macOS)
-        4
+        3
         #else
         6
         #endif
@@ -136,7 +136,7 @@ struct MediaItemViewView: View {
 
     private var contentSpacing: CGFloat {
         #if os(macOS)
-        5
+        4
         #else
         8
         #endif
@@ -144,7 +144,7 @@ struct MediaItemViewView: View {
 
     private var contentPadding: CGFloat {
         #if os(macOS)
-        10
+        8
         #else
         16
         #endif
