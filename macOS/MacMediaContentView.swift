@@ -19,12 +19,6 @@ struct MacMediaContentView: View {
         ZStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 30) {
-                    SectionHeader(
-                        eyebrow: "Apple TV Style",
-                        title: pageTitle,
-                        subtitle: "Крупная витрина, широкий hero и адаптивная сетка вместо tvOS-таба."
-                    )
-
                     subcategoryRail
 
                     if let featuredMedia {
@@ -56,7 +50,7 @@ struct MacMediaContentView: View {
                     .padding(.bottom, 48)
                 }
                 .padding(.horizontal, AppTheme.pagePadding)
-                .padding(.top, 28)
+                .padding(.top, 24)
             }
             .scrollIndicators(.hidden)
             .screenBackground()
@@ -64,6 +58,8 @@ struct MacMediaContentView: View {
 
             overlayView
         }
+        .navigationTitle(pageTitle)
+        .navigationSubtitle(viewModel.selectedFilter?.name ?? "")
         .onFirstAppear(refreshTask)
     }
 

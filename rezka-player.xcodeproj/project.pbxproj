@@ -128,6 +128,7 @@
 		F100000F28AB000000000001 /* MacMediaContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F100000E28AB000000000001 /* MacMediaContentView.swift */; };
 		F100001128AB000000000001 /* MacMediaSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F100001028AB000000000001 /* MacMediaSearchView.swift */; };
 		F100001328AB000000000001 /* MacImageSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = F100001228AB000000000001 /* MacImageSupport.swift */; };
+		MAC0000120260000000000A1 /* MacHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MAC0000220260000000000A1 /* MacHomeView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -222,6 +223,7 @@
 		F100000E28AB000000000001 /* MacMediaContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacMediaContentView.swift; sourceTree = "<group>"; };
 		F100001028AB000000000001 /* MacMediaSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacMediaSearchView.swift; sourceTree = "<group>"; };
 		F100001228AB000000000001 /* MacImageSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacImageSupport.swift; sourceTree = "<group>"; };
+		MAC0000220260000000000A1 /* MacHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacHomeView.swift; sourceTree = "<group>"; };
 		F100001428AB000000000001 /* icon-mac.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "icon-mac.xcassets"; sourceTree = "<group>"; };
 		F100001528AB000000000001 /* macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "macOS.entitlements"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -364,6 +366,7 @@
 				F100000C28AB000000000001 /* MacAppView.swift */,
 				F100000E28AB000000000001 /* MacMediaContentView.swift */,
 				F100001028AB000000000001 /* MacMediaSearchView.swift */,
+				MAC0000220260000000000A1 /* MacHomeView.swift */,
 				F100001228AB000000000001 /* MacImageSupport.swift */,
 				F100001428AB000000000001 /* icon-mac.xcassets */,
 				F100001528AB000000000001 /* macOS.entitlements */,
@@ -879,6 +882,7 @@
 				D4E9C7162F02000300B00101 /* BookmarksRezkaAPIResponse.swift in Sources */,
 				A5BB8F5928AEB8920070CC77 /* RezkaMediaApi.swift in Sources */,
 				F100000D28AB000000000001 /* MacAppView.swift in Sources */,
+				MAC0000120260000000000A1 /* MacHomeView.swift in Sources */,
 				A57D2DB228AEB11600E98298 /* MediaItemViewView.swift in Sources */,
 				A59DD3BF2DB18C17000E3B0D /* HLSURLRouter.swift in Sources */,
 				A5DF36E028EC871B00E0C5C0 /* MediaContentViewModel.swift in Sources */,

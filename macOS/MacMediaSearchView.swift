@@ -14,12 +14,6 @@ struct MacMediaSearchView: View {
         ZStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 30) {
-                    SectionHeader(
-                        eyebrow: "Поиск",
-                        title: "Найти фильм или сериал",
-                        subtitle: "Результаты выглядят как единая витрина: крупные постеры, мягкий свет и быстрые действия."
-                    )
-
                     LazyVGrid(columns: columns, alignment: .center, spacing: AppTheme.gridSpacing) {
                         ForEach(viewModel.newMedias, id: \.id) { media in
                             let isBookmarked = bookmarkViewModel.isBookmarked(for: media)
@@ -45,7 +39,7 @@ struct MacMediaSearchView: View {
                     .padding(.bottom, 48)
                 }
                 .padding(.horizontal, AppTheme.pagePadding)
-                .padding(.top, 18)
+                .padding(.top, 24)
             }
             .scrollIndicators(.hidden)
             .screenBackground()
@@ -68,6 +62,7 @@ struct MacMediaSearchView: View {
 
             overlayView
         }
+        .navigationTitle("Поиск")
     }
 
     @StateObject private var bookmarkViewModel = MediaBookmarksViewModel.shared

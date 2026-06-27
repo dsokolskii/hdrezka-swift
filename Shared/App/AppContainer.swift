@@ -46,4 +46,9 @@ final class AppContainer {
     func makeSearchViewModel(search: String = "") -> MediaSearchContentViewModel {
         MediaSearchContentViewModel(search: search, mediaRepository: mediaRepository)
     }
+
+    @MainActor
+    func makeMediaHomeViewModel() -> MediaHomeViewModel {
+        MediaHomeViewModel(mediaRepository: mediaRepository)
+    }
 }

@@ -3,7 +3,10 @@ import SwiftUI
 
 struct PlatformAppView: View {
     private enum SidebarDestination: Hashable {
+        case home
         case search
+        case continueWatching
+        case bookmarks
         case settings
         case category(Category)
     }
@@ -33,27 +36,6 @@ struct PlatformAppView: View {
                 await ContinueWatchingHistorySync.refreshFromStoredHistory()
             }
         }
-        .toolbar {
-            if authorizationViewModel.isAuthenticated {
-                ToolbarItemGroup(placement: .primaryAction) {
-                    Button {
-                        selectedSidebarDestination = .search
-                    } label: {
-                        Label("Поиск", systemImage: "magnifyingglass")
-                    }
-
-                    Button {
-                        selectedSidebarDestination = .settings
-                    } label: {
-                        Label("Настройки", systemImage: "slider.horizontal.3")
-                    }
-
-                    Button("Выйти", role: .destructive) {
-                        authorizationViewModel.logout()
-                    }
-                }
-            }
-        }
     }
 
     private var authorizedContent: some View {
@@ -80,12 +62,21 @@ struct PlatformAppView: View {
 
     private var sidebar: some View {
         List(selection: $selectedSidebarDestination) {
-            Section {
+            Section("Медиатека") {
+                Label("Главная", systemImage: "house.fill")
+                    .tag(SidebarDestination.home)
+
                 Label("Поиск", systemImage: "magnifyingglass")
                     .tag(SidebarDestination.search)
+
+                Label("Продолжить просмотр", systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90")
+                    .tag(SidebarDestination.continueWatching)
+
+                Label("Закладки", systemImage: "bookmark.fill")
+                    .tag(SidebarDestination.bookmarks)
             }
 
-            Section("Медиатека") {
+            Section("Категории") {
                 ForEach(tabCategories, id: \.type) { category in
                     Label(category.name, systemImage: category.type.sidebarSystemImage)
                         .tag(SidebarDestination.category(category.type))
@@ -154,10 +145,21 @@ struct PlatformAppView: View {
     @ViewBuilder
     private var detailContent: some View {
         switch selectedSidebarDestination {
+        case .home:
+            MacHomeView(viewModel: container.makeMediaHomeViewModel())
+                .id(SidebarDestination.home)
         case .search:
             MacMediaSearchView(viewModel: container.makeSearchViewModel())
+                .id(SidebarDestination.search)
+        case .continueWatching:
+            MacContinueWatchingView()
+                .id(SidebarDestination.continueWatching)
+        case .bookmarks:
+            MediaBookmarksView()
+                .id(SidebarDestination.bookmarks)
         case .settings:
             MacSettingsView(onMirrorChanged: handleMirrorChanged)
+                .id(SidebarDestination.settings)
         case .category(let type):
             if let category = tabCategories.first(where: { $0.type == type }) {
                 MacMediaContentView(
@@ -168,6 +170,7 @@ struct PlatformAppView: View {
                     ),
                     pageTitle: category.name
                 )
+                .id(type)
             } else {
                 EmptyPlaceholderView(text: "Категория недоступна", image: Image(systemName: "square.stack"))
             }
@@ -177,7 +180,7 @@ struct PlatformAppView: View {
     }
 
     private var tabCategories: [CategoryList] {
-        viewModel.categories.filter { $0.type != .search }
+        viewModel.categories.filter { $0.type != .search && $0.type != .general }
     }
 
     @ViewBuilder
@@ -213,14 +216,10 @@ struct PlatformAppView: View {
         switch selectedSidebarDestination {
         case .category(let type) where validCategoryTypes.contains(type):
             return
-        case .search, .settings:
+        case .home, .search, .continueWatching, .bookmarks, .settings:
             return
         default:
-            if let firstCategory = tabCategories.first {
-                selectedSidebarDestination = .category(firstCategory.type)
-            } else {
-                selectedSidebarDestination = .search
-            }
+            selectedSidebarDestination = .home
         }
     }
 
@@ -231,6 +230,7 @@ struct PlatformAppView: View {
     }
 
     private func handleMirrorChanged() {
+        selectedSidebarDestination = .home
         refreshTask()
     }
 }
