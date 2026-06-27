@@ -49,6 +49,7 @@ struct PlatformAppView: View {
     @State private var isSettingsPresented = false
     @State private var navigationRootID = UUID()
     @State private var contentFocusRequest = 0
+    @State private var settingsFocusRequest = 0
     @FocusState private var focusedProfileMenuItem: ProfileMenuFocusTarget?
 
     init(viewModel: ContentViewModel) {
@@ -151,7 +152,11 @@ struct PlatformAppView: View {
                     )
                 }
                 .navigationDestination(isPresented: $isSettingsPresented) {
-                    TVSettingsView(onMirrorChanged: handleMirrorChanged)
+                    TVSettingsView(
+                        onMoveLeftToProfileMenu: focusProfileMenuButton,
+                        focusRequest: settingsFocusRequest,
+                        onMirrorChanged: handleMirrorChanged
+                    )
                 }
             }
             .id(navigationRootID)
@@ -181,6 +186,11 @@ struct PlatformAppView: View {
     }
 
     private func requestContentFocus() {
+        if isSettingsPresented {
+            settingsFocusRequest &+= 1
+            return
+        }
+
         contentFocusRequest &+= 1
     }
 
@@ -269,7 +279,7 @@ struct PlatformAppView: View {
             VStack(alignment: .leading, spacing: 14) {
                 profileMenuItem(title: "Поиск", systemImage: "magnifyingglass", focusTarget: .search) {
                     closeProfileMenu()
-                    focusedProfileMenuItem = nil
+                    focusedProfileMenuItem = .profileButton
                     isSettingsPresented = false
                     isSearchPresented = true
                 }
@@ -280,7 +290,7 @@ struct PlatformAppView: View {
 
                 profileMenuItem(title: "Закладки", systemImage: "bookmark", focusTarget: .bookmarks) {
                     closeProfileMenu()
-                    focusedProfileMenuItem = nil
+                    focusedProfileMenuItem = .profileButton
                     isSearchPresented = false
                     isSettingsPresented = false
                     isBookmarksPresented = true
@@ -288,7 +298,7 @@ struct PlatformAppView: View {
 
                 profileMenuItem(title: "Настройки", systemImage: "gearshape", focusTarget: .settings) {
                     closeProfileMenu()
-                    focusedProfileMenuItem = nil
+                    focusedProfileMenuItem = .profileButton
                     isSearchPresented = false
                     isSettingsPresented = true
                 }
@@ -354,6 +364,7 @@ struct PlatformAppView: View {
     private func navigateHome() {
         closeProfileMenu()
         isSearchPresented = false
+        isBookmarksPresented = false
         isSettingsPresented = false
         navigationRootID = UUID()
     }
@@ -527,6 +538,8 @@ private struct TVSettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AuthorizationViewModel.self) private var authorizationViewModel
 
+    let onMoveLeftToProfileMenu: () -> Void
+    let focusRequest: Int
     let onMirrorChanged: () -> Void
 
     @State private var mirror = ConstantsApi.host
@@ -554,6 +567,7 @@ private struct TVSettingsView: View {
                         .keyboardType(.URL)
                         .textContentType(.URL)
                         .focused($focusedTarget, equals: .mirror)
+                        .onMoveLeftToProfileMenu(true, perform: onMoveLeftToProfileMenu)
 
                         Button {
                             saveMirror()
@@ -600,6 +614,7 @@ private struct TVSettingsView: View {
                 .buttonBorderShape(.capsule)
                 .controlSize(.large)
                 .focused($focusedTarget, equals: .logout)
+                .onMoveLeftToProfileMenu(true, perform: onMoveLeftToProfileMenu)
             }
             .frame(maxWidth: 1040, alignment: .leading)
             .padding(.horizontal, AppTheme.pagePadding)
@@ -609,7 +624,7 @@ private struct TVSettingsView: View {
         .onExitCommand {
             dismiss()
         }
-        .onAppear {
+        .onChange(of: focusRequest) { _, _ in
             focusedTarget = .mirror
         }
     }

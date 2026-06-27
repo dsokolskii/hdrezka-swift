@@ -12,8 +12,8 @@ struct MediaRezkaApi {
         try await fetchMedias(from: generateNewMediaURL(from: category, filter: filter, genre: genre, page: page))
     }
 
-    /// Подборки новинок с главной сайта: AJAX-endpoint
-    /// `/engine/ajax/get_newest_slider_content.php?cat_id=<id>`.
+    /// Подборки новинок с главной сайта: POST на AJAX-endpoint
+    /// `/engine/ajax/get_newest_slider_content.php` с formData `id=<catId>`.
     func fetchNewestSlider(category: Category) async throws -> [Media] {
         guard let catId = category.sliderCatId else {
             throw DataError.generate(for: .rezkaConstantsApi, error: .bad)
@@ -176,10 +176,8 @@ struct MediaRezkaApi {
         return (urlComponents?.url)!
     }
 
-    private func generateNewestSliderURL(catId: Int) -> URL {
-        var components = URLComponents(string: "\(ConstantsApi.server)/engine/ajax/get_newest_slider_content.php")!
-        components.queryItems = [URLQueryItem(name: "cat_id", value: "\(catId)")]
-        return components.url!
+    private func generateNewestSliderURL() -> URL {
+        URL(string: "\(ConstantsApi.server)/engine/ajax/get_newest_slider_content.php")!
     }
     
     private func generateNewMediaURL(from category: Category, filter: SubCategoryList?, genre: SubCategoryList?, page: Int = 1) -> URL {
@@ -242,12 +240,17 @@ struct MediaRezkaApi {
         return request
     }
 
-    private func sliderRequest(for catId: Int) -> URLRequest {
-        var request = URLRequest(url: generateNewestSliderURL(catId: catId))
-        request.httpMethod = ApiConstants.HttpMethod.get.rawValue
+    private func sliderRequest(for id: Int) -> URLRequest {
+        var bodyComponents = URLComponents()
+        bodyComponents.queryItems = [URLQueryItem(name: "id", value: "\(id)")]
+
+        var request = URLRequest(url: generateNewestSliderURL())
+        request.httpMethod = ApiConstants.HttpMethod.post.rawValue
+        request.httpBody = bodyComponents.query?.data(using: .utf8)
         request.setValue(ApiConstants.userAgent, forHTTPHeaderField: ApiConstants.userAgentKey)
         request.setValue("\(ConstantsApi.server)/", forHTTPHeaderField: "Referer")
         request.setValue(ConstantsApi.server, forHTTPHeaderField: "Origin")
+        request.setValue(ApiConstants.formContentType, forHTTPHeaderField: ApiConstants.contentTypeKey)
         request.setValue(ApiConstants.AcceptTypeHtml, forHTTPHeaderField: ApiConstants.AcceptTypeKey)
         request.setValue("XMLHttpRequest", forHTTPHeaderField: "X-Requested-With")
         return request

@@ -6,11 +6,11 @@ struct MediaRezkaAPIResponse: Decodable {
     
     init(from html: String) throws {
         let doc = try SwiftSoup.parse(html)
-        let items = try doc.body()?.getElementById("main")?.getElementsByClass("b-content__inline_items").first?.getElementsByClass("b-content__inline_item")
-        
+        let items = try Self.inlineItems(from: doc)
+
         var medias: [Media] = []
         
-        try items?.forEach({ item in
+        try items.forEach({ item in
             let coverElement = try item.getElementsByClass("b-content__inline_item-cover").first
             let linkElement = try item.getElementsByClass("b-content__inline_item-link").first
             
@@ -48,6 +48,26 @@ struct MediaRezkaAPIResponse: Decodable {
         })
         
         self.medias = medias
+    }
+
+    /// Извлекает карточки медиа из HTML. Полные страницы отдают их внутри
+    /// `#main .b-content__inline_items`, а partial-ответы AJAX-endpoint'ов
+    /// (например, `get_newest_slider_content.php` — подборки новинок на главной)
+    /// приходят без `#main`, с контейнером вроде `.b-newest_slider__list`,
+    /// поэтому находим элементы `.b-content__inline_item` по всему документу,
+    /// если scoped-путь ничего не дал.
+    private static func inlineItems(from doc: Document) throws -> Elements {
+        let scoped = try doc.body()?
+            .getElementById("main")?
+            .getElementsByClass("b-content__inline_items")
+            .first?
+            .getElementsByClass("b-content__inline_item")
+
+        if let scoped, scoped.isEmpty == false {
+            return scoped
+        }
+
+        return try doc.getElementsByClass("b-content__inline_item")
     }
 
     private static func resolveImageURL(from imgTag: Element?) throws -> String {
