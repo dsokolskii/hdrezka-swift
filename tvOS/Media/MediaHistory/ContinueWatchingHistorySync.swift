@@ -25,6 +25,24 @@ enum ContinueWatchingHistorySync {
     )
 
     static func write(history: [DetailedHistoryMedia]) {
+        // Авто-возврат: если по тайтлу снова смотрят (позиция изменилась),
+        // убираем его из скрытых, чтобы он снова появился в подборке.
+        var hiddenIds = ContinueWatchingStore.loadHiddenMediaIds()
+        let existingByMediaId = Dictionary(uniqueKeysWithValues:
+            (ContinueWatchingStore.load()?.items ?? []).map { ($0.mediaId, $0) }
+        )
+        let newlyWatchedIds = Set(history
+            .filter { entry in
+                guard let existing = existingByMediaId[entry.mediaId] else { return true }
+                return abs(existing.playbackPosition - max(0, entry.playbackPosition)) >= progressEqualityTolerance
+            }
+            .map { $0.mediaId }
+        )
+        if newlyWatchedIds.isEmpty == false {
+            hiddenIds.subtract(newlyWatchedIds)
+            ContinueWatchingStore.saveHiddenMediaIds(hiddenIds)
+        }
+
         let mappedItems = Array(history
             .sorted { $0.updatedAt > $1.updatedAt }
             .prefix(50)
@@ -43,6 +61,29 @@ enum ContinueWatchingHistorySync {
         Task.detached(priority: .utility) {
             await prefetchMissingCoversAndRewritePayload(items: payload.items)
         }
+    }
+
+    /// Убирает тайтл из подборки «Продолжить просмотр» (и из Top Shelf).
+    /// Полная история просмотра в CloudKit сохраняется — прогресс не теряется.
+    /// Тайтл вернётся в подборку автоматически при следующем просмотре (обновлении позиции).
+    static func removeFromShelf(mediaId: Int) {
+        var hiddenIds = ContinueWatchingStore.loadHiddenMediaIds()
+        hiddenIds.insert(mediaId)
+        ContinueWatchingStore.saveHiddenMediaIds(hiddenIds)
+
+        let currentItems = ContinueWatchingStore.load()?.items ?? []
+        let filteredItems = currentItems.filter { $0.mediaId != mediaId }
+        guard filteredItems.count != currentItems.count else {
+            notifyTopShelfContentChanged()
+            return
+        }
+
+        let payload = ContinueWatchingPayload(
+            generatedAt: Date(),
+            items: filteredItems
+        )
+        ContinueWatchingStore.save(payload)
+        notifyTopShelfContentChanged()
     }
 
     private static func mapItem(from history: DetailedHistoryMedia) -> ContinueWatchingPayload.Item? {
@@ -84,7 +125,11 @@ enum ContinueWatchingHistorySync {
         let existingItems = ContinueWatchingStore.load()?.items ?? []
         let existingByMediaId = Dictionary(uniqueKeysWithValues: existingItems.map { ($0.mediaId, $0) })
 
-        let reconciled = mappedItems.map { item -> ContinueWatchingPayload.Item in
+        let hiddenIds = ContinueWatchingStore.loadHiddenMediaIds()
+
+        let reconciled = mappedItems
+            .filter { hiddenIds.contains($0.mediaId) == false }
+            .map { item -> ContinueWatchingPayload.Item in
             guard let existing = existingByMediaId[item.mediaId] else {
                 return item
             }

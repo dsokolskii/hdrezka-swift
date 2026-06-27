@@ -20,6 +20,9 @@ struct MacContinueWatchingView: View {
     @State private var items: [ContinueWatchingPayload.Item] = []
     @StateObject private var bookmarkViewModel = MediaBookmarksViewModel.shared
 
+    /// Запрос на подтверждение удаления тайтла из подборки.
+    @State private var pendingRemoval: ContinueWatchingPayload.Item?
+
     private let columns: [GridItem] = [
         GridItem(.adaptive(minimum: 210, maximum: 260), spacing: AppTheme.gridSpacing, alignment: .top)
     ]
@@ -50,6 +53,13 @@ struct MacContinueWatchingView: View {
                                         .frame(width: MediaItemViewView.coverSize.width, height: MediaItemViewView.coverSize.height)
                                 }
                                 .buttonStyle(.borderless)
+                                .contextMenu {
+                                    Button(role: .destructive) {
+                                        pendingRemoval = item
+                                    } label: {
+                                        Label("Удалить", systemImage: "trash")
+                                    }
+                                }
                             }
                         }
                         .padding(.bottom, 48)
@@ -64,6 +74,27 @@ struct MacContinueWatchingView: View {
         .navigationTitle("Продолжить просмотр")
         .onFirstAppear { reload() }
         .onAppear { reload() }
+        .confirmationDialog(
+            pendingRemoval?.title ?? "",
+            isPresented: Binding(
+                get: { pendingRemoval != nil },
+                set: { if $0 == false { pendingRemoval = nil } }
+            ),
+            titleVisibility: .visible
+        ) {
+            Button("Удалить из подборки", role: .destructive) {
+                if let removal = pendingRemoval {
+                    ContinueWatchingHistorySync.removeFromShelf(mediaId: removal.mediaId)
+                    reload()
+                    pendingRemoval = nil
+                }
+            }
+            Button("Отмена", role: .cancel) {
+                pendingRemoval = nil
+            }
+        } message: {
+            Text("Тайтл исчезнет из подборки «Продолжить просмотр» и Top Shelf. Вновь появится здесь при следующем просмотре.")
+        }
     }
 
     private var emptyState: some View {

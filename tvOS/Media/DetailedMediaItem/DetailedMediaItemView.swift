@@ -274,7 +274,6 @@ struct DetailedMediaItemView: View {
                 .controlSize(.small)
                 .tint(playButtonTint)
                 .focused($focusedHeroControl, equals: .play)
-                .onMoveLeftToProfileMenu(true, perform: onMoveLeftToProfileMenu)
                 .disabled(viewModel.isPreparingPlayback)
                 
                 if viewModel.resumePlaybackPosition != nil {

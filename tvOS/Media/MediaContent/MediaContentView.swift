@@ -13,6 +13,7 @@ struct MediaContentView: View {
     @StateObject private var bookmarkViewModel = MediaBookmarksViewModel.shared
     @State private var isFilterMenuPresented = false
     @State private var isGenreMenuPresented = false
+    @State private var hasPendingFocusRequest = false
     private let onMoveLeftToProfileMenu: () -> Void
     private let focusRequest: Int
     @FocusState private var focusedTarget: FocusTarget?
@@ -42,6 +43,13 @@ struct MediaContentView: View {
         }
         .onFirstAppear(refreshTask)
         .onChange(of: focusRequest) { _, _ in
+            hasPendingFocusRequest = true
+            focusEntryControl()
+        }
+        .onChange(of: viewModel.newMedias.count) { _, _ in
+            // Контент мог появиться после запроса фокуса — повторяем попытку,
+            // чтобы фокус встал на верхний элемент, а не «улетал вниз».
+            guard hasPendingFocusRequest else { return }
             focusEntryControl()
         }
     }
@@ -223,19 +231,24 @@ struct MediaContentView: View {
     private func focusEntryControl() {
         if viewModel.filters.isEmpty == false {
             focusedTarget = .filter
+            hasPendingFocusRequest = false
             return
         }
 
         if viewModel.genres.isEmpty == false {
             focusedTarget = .genre
+            hasPendingFocusRequest = false
             return
         }
 
         guard let firstMedia = viewModel.newMedias.first(where: { $0.category != .loadMore }) else {
+            // Контент ещё не загружен — оставляем запрос «висящим» и повторим
+            // попытку, когда придут данные (см. onChange(of: viewModel.phase)).
             return
         }
 
         focusedTarget = .media(firstMedia.id)
+        hasPendingFocusRequest = false
     }
 }
 
@@ -247,6 +260,9 @@ struct MediaHomeShelfDescriptor {
 struct MediaHomeShelfItem: Identifiable {
     let media: Media
     let autoResumePlaybackPosition: Double?
+    /// Идентификатор тайтла в истории просмотра. Не-nil только для подборки
+    /// «Продолжить просмотр» — используется для удаления из подборки.
+    let mediaId: Int?
 
     var id: String {
         media.id
@@ -279,6 +295,32 @@ final class MediaHomeViewModel {
         self.mediaRepository = mediaRepository
     }
 
+    /// Удаляет тайтл из подборки «Продолжить просмотр» (скрывает его, не трогая историю).
+    func removeFromShelf(mediaId: Int) {
+        ContinueWatchingHistorySync.removeFromShelf(mediaId: mediaId)
+
+        guard case .success(let shelves) = phase else { return }
+
+        var updatedShelves: [MediaHomeShelf] = []
+        for shelf in shelves {
+            guard shelf.descriptor.category == .general else {
+                updatedShelves.append(shelf)
+                continue
+            }
+
+            let filteredItems = shelf.items.filter { $0.mediaId != mediaId }
+            if filteredItems.isEmpty {
+                // Полка опустела — убираем её целиком.
+                continue
+            }
+            updatedShelves.append(
+                MediaHomeShelf(descriptor: shelf.descriptor, items: filteredItems)
+            )
+        }
+
+        phase = .success(updatedShelves)
+    }
+
     func load() async {
         if Task.isCancelled { return }
 
@@ -292,11 +334,8 @@ final class MediaHomeViewModel {
 
         for descriptor in descriptors {
             do {
-                let medias = try await mediaRepository.refreshMediaList(
-                    category: descriptor.category,
-                    filter: nil,
-                    genre: nil,
-                    page: 1
+                let medias = try await mediaRepository.refreshSlider(
+                    category: descriptor.category
                 )
 
                 if Task.isCancelled { return }
@@ -330,10 +369,8 @@ final class MediaHomeViewModel {
 
         for descriptor in descriptors {
             guard
-                let medias = await mediaRepository.cachedMediaList(
-                    category: descriptor.category,
-                    filter: nil,
-                    genre: nil
+                let medias = await mediaRepository.cachedSlider(
+                    category: descriptor.category
                 ),
                 medias.isEmpty == false
             else {
@@ -350,7 +387,7 @@ final class MediaHomeViewModel {
         MediaHomeShelf(
             descriptor: descriptor,
             items: Array(medias.prefix(12)).map {
-                MediaHomeShelfItem(media: $0, autoResumePlaybackPosition: nil)
+                MediaHomeShelfItem(media: $0, autoResumePlaybackPosition: nil, mediaId: nil)
             }
         )
     }
@@ -371,7 +408,8 @@ final class MediaHomeViewModel {
                         category: item.isSeries ? .series : .films,
                         quality: .unknown
                     ),
-                    autoResumePlaybackPosition: item.playbackPosition
+                    autoResumePlaybackPosition: item.playbackPosition,
+                    mediaId: item.mediaId
                 )
             }
 
@@ -420,6 +458,13 @@ final class MediaHomeViewModel {
     ]
 }
 
+/// Запрос на удаление тайтла из подборки «Продолжить просмотр».
+private struct PendingRemoval: Identifiable {
+    let id = UUID()
+    let mediaId: Int
+    let media: Media
+}
+
 struct MediaHomeView: View {
     private enum FocusTarget: Hashable {
         case media(String)
@@ -427,6 +472,11 @@ struct MediaHomeView: View {
 
     @State private var viewModel: MediaHomeViewModel
     @StateObject private var bookmarkViewModel = MediaBookmarksViewModel.shared
+
+    /// Запрос на подтверждение удаления из подборки «Продолжить просмотр».
+    @State private var pendingRemoval: PendingRemoval?
+    /// Тайтл для программного открытия страницы (действие «Перейти» из контекстного меню).
+    @State private var detailNavigation: Media?
 
     private let onMoveLeftToProfileMenu: () -> Void
     private let focusRequest: Int
@@ -464,6 +514,33 @@ struct MediaHomeView: View {
             guard let firstMedia = viewModel.shelves.first?.items.first?.media else { return }
 
             focusedTarget = .media(firstMedia.id)
+        }
+        .navigationDestination(item: $detailNavigation) { media in
+            DetailedMediaItemView(
+                viewModel: DetailedMediaItemViewModel(media: media),
+                bookmarkViewModel: bookmarkViewModel,
+                onMoveLeftToProfileMenu: onMoveLeftToProfileMenu
+            )
+        }
+        .confirmationDialog(
+            pendingRemoval?.media.title ?? "",
+            isPresented: Binding(
+                get: { pendingRemoval != nil },
+                set: { if $0 == false { pendingRemoval = nil } }
+            ),
+            titleVisibility: .visible
+        ) {
+            Button("Удалить из подборки", role: .destructive) {
+                if let removal = pendingRemoval {
+                    viewModel.removeFromShelf(mediaId: removal.mediaId)
+                    pendingRemoval = nil
+                }
+            }
+            Button("Отмена", role: .cancel) {
+                pendingRemoval = nil
+            }
+        } message: {
+            Text("Тайтл исчезнет из подборки «Продолжить просмотр» и Top Shelf. Вновь появится здесь при следующем просмотре.")
         }
     }
 
@@ -510,6 +587,24 @@ struct MediaHomeView: View {
                         .buttonStyle(.borderless)
                         .focused($focusedTarget, equals: .media(media.id))
                         .onMoveLeftToProfileMenu(index == 0, perform: onMoveLeftToProfileMenu)
+                        .contextMenu {
+                            if let mediaId = item.mediaId {
+                                Button {
+                                    detailNavigation = media
+                                } label: {
+                                    Label("Перейти", systemImage: "rectangle.on.rectangle")
+                                }
+
+                                Button(role: .destructive) {
+                                    pendingRemoval = PendingRemoval(
+                                        mediaId: mediaId,
+                                        media: media
+                                    )
+                                } label: {
+                                    Label("Удалить", systemImage: "trash")
+                                }
+                            }
+                        }
                     }
                 }
                 .padding(.leading, AppTheme.pagePadding)

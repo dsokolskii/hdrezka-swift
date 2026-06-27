@@ -11,6 +11,15 @@ struct MediaRezkaApi {
     func fetch(from category: Category, filter: SubCategoryList?, genre: SubCategoryList?, page: Int = 1) async throws -> [Media] {
         try await fetchMedias(from: generateNewMediaURL(from: category, filter: filter, genre: genre, page: page))
     }
+
+    /// Подборки новинок с главной сайта: AJAX-endpoint
+    /// `/engine/ajax/get_newest_slider_content.php?cat_id=<id>`.
+    func fetchNewestSlider(category: Category) async throws -> [Media] {
+        guard let catId = category.sliderCatId else {
+            throw DataError.generate(for: .rezkaConstantsApi, error: .bad)
+        }
+        return try await fetchMedias(using: sliderRequest(for: catId))
+    }
     
     func fetchDetails(from media: Media, translation: Int? = nil) async throws -> DetailedMedia {
         var detailedMedia = try await fetchMedia(from: media.mediaURL)
@@ -69,8 +78,10 @@ struct MediaRezkaApi {
     }
     
     private func fetchMedias(from url: URL) async throws -> [Media] {
-        let request = request(for: url)
-        
+        try await fetchMedias(using: request(for: url))
+    }
+
+    private func fetchMedias(using request: URLRequest) async throws -> [Media] {
         let (data, response) = try await session.data(for: request)
         
         guard let response = response as? HTTPURLResponse else {
@@ -80,11 +91,11 @@ struct MediaRezkaApi {
         switch response.statusCode {
         case 200...299:
             let html = String(decoding: data, as: UTF8.self)
-            guard !html.isEmpty else {
+            guard html.isEmpty == false else {
                 throw DataError.generate(for: .rezkaConstantsApi, error: .empty)
             }
 
-            guard !html.isRezkaLoginPage else {
+            guard html.isRezkaLoginPage == false else {
                 throw DataError.generate(for: .rezkaConstantsApi, error: .authorization)
             }
             
@@ -164,6 +175,12 @@ struct MediaRezkaApi {
         
         return (urlComponents?.url)!
     }
+
+    private func generateNewestSliderURL(catId: Int) -> URL {
+        var components = URLComponents(string: "\(ConstantsApi.server)/engine/ajax/get_newest_slider_content.php")!
+        components.queryItems = [URLQueryItem(name: "cat_id", value: "\(catId)")]
+        return components.url!
+    }
     
     private func generateNewMediaURL(from category: Category, filter: SubCategoryList?, genre: SubCategoryList?, page: Int = 1) -> URL {
         var pathComponents: [String] = []
@@ -222,6 +239,17 @@ struct MediaRezkaApi {
         request.setValue(ApiConstants.userAgent, forHTTPHeaderField: ApiConstants.userAgentKey)
         request.addValue(ApiConstants.defaultContentType, forHTTPHeaderField: ApiConstants.contentTypeKey)
         request.addValue(ApiConstants.AcceptTypeHtml, forHTTPHeaderField: ApiConstants.AcceptTypeKey)
+        return request
+    }
+
+    private func sliderRequest(for catId: Int) -> URLRequest {
+        var request = URLRequest(url: generateNewestSliderURL(catId: catId))
+        request.httpMethod = ApiConstants.HttpMethod.get.rawValue
+        request.setValue(ApiConstants.userAgent, forHTTPHeaderField: ApiConstants.userAgentKey)
+        request.setValue("\(ConstantsApi.server)/", forHTTPHeaderField: "Referer")
+        request.setValue(ConstantsApi.server, forHTTPHeaderField: "Origin")
+        request.setValue(ApiConstants.AcceptTypeHtml, forHTTPHeaderField: ApiConstants.AcceptTypeKey)
+        request.setValue("XMLHttpRequest", forHTTPHeaderField: "X-Requested-With")
         return request
     }
     

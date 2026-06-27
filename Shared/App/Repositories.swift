@@ -26,6 +26,8 @@ protocol NavigationRepository {
 protocol MediaRepository {
     func cachedMediaList(category: Category, filter: SubCategoryList?, genre: SubCategoryList?) async -> [Media]?
     func refreshMediaList(category: Category, filter: SubCategoryList?, genre: SubCategoryList?, page: Int) async throws -> [Media]
+    func cachedSlider(category: Category) async -> [Media]?
+    func refreshSlider(category: Category) async throws -> [Media]
     func cachedSearchResults(for query: String) async -> [Media]?
     func search(query: String, page: Int) async throws -> [Media]
     func fetchDetails(from media: Media, translation: Int?) async throws -> DetailedMedia
@@ -91,6 +93,18 @@ struct LiveMediaRepository: MediaRepository {
         return medias
     }
 
+    func cachedSlider(category: Category) async -> [Media]? {
+        try? await mediaCache.loadFromDisk()
+        return await mediaCache.value(forKey: CacheKeys.slider(category: category))
+    }
+
+    func refreshSlider(category: Category) async throws -> [Media] {
+        let medias = try await api.fetchNewestSlider(category: category)
+        await mediaCache.setValue(medias, forKey: CacheKeys.slider(category: category))
+        try? await mediaCache.saveToDisk()
+        return medias
+    }
+
     func cachedSearchResults(for query: String) async -> [Media]? {
         try? await searchCache.loadFromDisk()
         return await searchCache.value(forKey: CacheKeys.search(query: query))
@@ -131,6 +145,10 @@ private enum CacheKeys {
             filter?.uri ?? "default",
             genre?.uri ?? "all"
         ].joined(separator: "_")
+    }
+
+    static func slider(category: Category) -> String {
+        "slider_\(category.rawValue)"
     }
 
     static func search(query: String) -> String {

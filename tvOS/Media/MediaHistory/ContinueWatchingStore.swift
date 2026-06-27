@@ -89,6 +89,20 @@ enum ContinueWatchingStore {
 	private static let fileName = "continue-watching.json"
 	private static let appGroupIdentifier = "group.com.isoft.rezka-player.tvos"
 	private static let sharedDefaultsKey = "continue-watching.payload"
+	private static let hiddenMediaIdsKey = "continue-watching.hidden"
+
+	/// Скрытые пользователем mediaId: тайтлы убраны из подборки «Продолжить просмотр»,
+	/// но остаются в истории просмотра (CloudKit), чтобы прогресс не терялся.
+	static func loadHiddenMediaIds() -> Set<Int> {
+		guard let array = sharedDefaults()?.array(forKey: hiddenMediaIdsKey) else {
+			return []
+		}
+		return Set(array.compactMap { ($0 as? NSNumber)?.intValue })
+	}
+
+	static func saveHiddenMediaIds(_ ids: Set<Int>) {
+		sharedDefaults()?.set(Array(ids), forKey: hiddenMediaIdsKey)
+	}
 
     static func load() -> ContinueWatchingPayload? {
         if let payload = loadFromSharedDefaults() {
@@ -102,8 +116,7 @@ enum ContinueWatchingStore {
         }
 
         let legacyURL = fallbackOutputURL()
-        guard legacyURL.path != primaryURL.path,
-              let legacyData = try? Data(contentsOf: legacyURL),
+        guard let legacyData = try? Data(contentsOf: legacyURL),
               let payload = try? JSONDecoder().decode(ContinueWatchingPayload.self, from: legacyData) else {
             return nil
         }

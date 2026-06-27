@@ -21,6 +21,12 @@ struct PlatformAppView: View {
         let playbackPosition: Double
     }
 
+    /// Выбор вкладки на главной tvOS: «Главная» (полки) + вкладки категорий.
+    private enum HomeTab: Hashable {
+        case home
+        case category(Category)
+    }
+
     private enum ProfileMenuFocusTarget: Hashable {
         case profileButton
         case search
@@ -34,13 +40,15 @@ struct PlatformAppView: View {
     @Environment(AuthorizationViewModel.self) private var authorizationViewModel
 
     @State private var viewModel: ContentViewModel
-    @State private var selectedCategory: CategoryList?
+    @State private var selectedTab: HomeTab = .home
     @State private var pendingTopShelfRequest: TopShelfContinueRequest?
     @State private var presentedTopShelfRequest: TopShelfContinueRequest?
     @State private var isProfileMenuPresented = false
     @State private var isSearchPresented = false
+    @State private var isBookmarksPresented = false
     @State private var isSettingsPresented = false
     @State private var navigationRootID = UUID()
+    @State private var contentFocusRequest = 0
     @FocusState private var focusedProfileMenuItem: ProfileMenuFocusTarget?
 
     init(viewModel: ContentViewModel) {
@@ -93,7 +101,16 @@ struct PlatformAppView: View {
         ZStack {
             NavigationStack {
                 ZStack {
-                    TabView {
+                    TabView(selection: $selectedTab) {
+                        MediaHomeView(
+                            viewModel: container.makeMediaHomeViewModel(),
+                            onMoveLeftToProfileMenu: focusProfileMenuButton
+                        )
+                        .tag(HomeTab.home)
+                        .tabItem {
+                            Text("Главная")
+                        }
+
                         ForEach(tabCategories, id: \.type) { category in
                             MediaContentView(
                                 viewModel: container.makeMediaContentViewModel(
@@ -101,8 +118,10 @@ struct PlatformAppView: View {
                                     filters: category.filters,
                                     genres: category.genres
                                 ),
-                                onMoveLeftToProfileMenu: focusProfileMenuButton
+                                onMoveLeftToProfileMenu: focusProfileMenuButton,
+                                focusRequest: contentFocusRequest
                             )
+                            .tag(HomeTab.category(category.type))
                             .tabItem {
                                 Text(category.name)
                             }
@@ -116,13 +135,18 @@ struct PlatformAppView: View {
                 }
                 .screenBackground()
                 .onFirstAppear {
-                    selectedCategory = tabCategories.first
+                    selectedTab = .home
                     refreshTask()
                     notifyTopShelfContentChanged()
                 }
                 .navigationDestination(isPresented: $isSearchPresented) {
                     MediaSearchView(
                         viewModel: container.makeSearchViewModel(),
+                        onMoveLeftToProfileMenu: focusProfileMenuButton
+                    )
+                }
+                .navigationDestination(isPresented: $isBookmarksPresented) {
+                    MediaBookmarksView(
                         onMoveLeftToProfileMenu: focusProfileMenuButton
                     )
                 }
@@ -154,6 +178,10 @@ struct PlatformAppView: View {
             guard isProfileMenuPresented, newTarget == nil else { return }
             closeProfileMenu()
         }
+    }
+
+    private func requestContentFocus() {
+        contentFocusRequest &+= 1
     }
 
     private var tabCategories: [CategoryList] {
@@ -213,6 +241,14 @@ struct PlatformAppView: View {
         .frame(width: Self.profileMenuAvatarSlotSize, height: Self.profileMenuAvatarSlotSize)
         .disabled(isBlockingOverlayPresented)
         .focused($focusedProfileMenuItem, equals: .profileButton)
+        .onMoveCommand { direction in
+            // Пользователь нажал вправо/вниз, находясь на аватаре. По умолчанию
+            // фокус-движок tvOS в таких случаях часто промахивается и «улетает далеко
+            // вниз». Перехватываем и явно ставим фокус на верхний элемент контента
+            // активной вкладки (фильтр → жанр → первый постер).
+            guard direction == .right || direction == .down else { return }
+            requestContentFocus()
+        }
     }
 
     private var profileMenuOverlay: some View {
@@ -242,7 +278,12 @@ struct PlatformAppView: View {
                     navigateHome()
                 }
 
-                profileMenuItem(title: "Закладки", systemImage: "bookmark", focusTarget: .bookmarks, isEnabled: false) {
+                profileMenuItem(title: "Закладки", systemImage: "bookmark", focusTarget: .bookmarks) {
+                    closeProfileMenu()
+                    focusedProfileMenuItem = nil
+                    isSearchPresented = false
+                    isSettingsPresented = false
+                    isBookmarksPresented = true
                 }
 
                 profileMenuItem(title: "Настройки", systemImage: "gearshape", focusTarget: .settings) {

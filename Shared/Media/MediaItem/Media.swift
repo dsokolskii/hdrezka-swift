@@ -113,6 +113,11 @@ struct Media {
 extension Media: Codable {}
 extension Media: Equatable {}
 extension Media: Identifiable {}
+extension Media: Hashable {
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+}
 
 extension Media {
     
