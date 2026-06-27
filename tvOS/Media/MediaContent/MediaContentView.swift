@@ -295,9 +295,9 @@ final class MediaHomeViewModel {
         self.mediaRepository = mediaRepository
     }
 
-    /// Удаляет тайтл из подборки «Продолжить просмотр» (скрывает его, не трогая историю).
+    /// Полностью удаляет тайтл из истории просмотра и подборки «Продолжить просмотр».
     func removeFromShelf(mediaId: Int) {
-        ContinueWatchingHistorySync.removeFromShelf(mediaId: mediaId)
+        ContinueWatchingHistorySync.removeFromHistory(mediaId: mediaId)
 
         guard case .success(let shelves) = phase else { return }
 
@@ -458,13 +458,6 @@ final class MediaHomeViewModel {
     ]
 }
 
-/// Запрос на удаление тайтла из подборки «Продолжить просмотр».
-private struct PendingRemoval: Identifiable {
-    let id = UUID()
-    let mediaId: Int
-    let media: Media
-}
-
 struct MediaHomeView: View {
     private enum FocusTarget: Hashable {
         case media(String)
@@ -473,8 +466,6 @@ struct MediaHomeView: View {
     @State private var viewModel: MediaHomeViewModel
     @StateObject private var bookmarkViewModel = MediaBookmarksViewModel.shared
 
-    /// Запрос на подтверждение удаления из подборки «Продолжить просмотр».
-    @State private var pendingRemoval: PendingRemoval?
     /// Тайтл для программного открытия страницы (действие «Перейти» из контекстного меню).
     @State private var detailNavigation: Media?
 
@@ -521,26 +512,6 @@ struct MediaHomeView: View {
                 bookmarkViewModel: bookmarkViewModel,
                 onMoveLeftToProfileMenu: onMoveLeftToProfileMenu
             )
-        }
-        .confirmationDialog(
-            pendingRemoval?.media.title ?? "",
-            isPresented: Binding(
-                get: { pendingRemoval != nil },
-                set: { if $0 == false { pendingRemoval = nil } }
-            ),
-            titleVisibility: .visible
-        ) {
-            Button("Удалить из подборки", role: .destructive) {
-                if let removal = pendingRemoval {
-                    viewModel.removeFromShelf(mediaId: removal.mediaId)
-                    pendingRemoval = nil
-                }
-            }
-            Button("Отмена", role: .cancel) {
-                pendingRemoval = nil
-            }
-        } message: {
-            Text("Тайтл исчезнет из подборки «Продолжить просмотр» и Top Shelf. Вновь появится здесь при следующем просмотре.")
         }
     }
 
@@ -596,10 +567,7 @@ struct MediaHomeView: View {
                                 }
 
                                 Button(role: .destructive) {
-                                    pendingRemoval = PendingRemoval(
-                                        mediaId: mediaId,
-                                        media: media
-                                    )
+                                    viewModel.removeFromShelf(mediaId: mediaId)
                                 } label: {
                                     Label("Удалить", systemImage: "trash")
                                 }

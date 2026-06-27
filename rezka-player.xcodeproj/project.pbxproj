@@ -710,10 +710,12 @@
 				A5B79D3D28ABF0D5006CAF8E /* Sources */,
 				A5B79D3E28ABF0D5006CAF8E /* Frameworks */,
 				A5B79D3F28ABF0D5006CAF8E /* Resources */,
+				EA19BAF7D2BB105C32AE2FD5 /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				681CB359A10D38CFFE66D19A /* PBXTargetDependency */,
 			);
 			name = "rezka-player";
 			packageProductDependencies = (
