@@ -138,6 +138,7 @@ final class RezkaAuthorizationService {
             cookieStorage.setCookie(restoredCookie)
         }
 
+        syncHostWithAuthCookiesIfNeeded()
         persistCookies()
     }
 
@@ -238,6 +239,7 @@ final class RezkaAuthorizationService {
             throw DataError.generate(for: .rezkaConstantsApi, error: .authorization)
         }
 
+        syncHostWithAuthCookiesIfNeeded()
         persistCookies()
     }
 
@@ -245,7 +247,7 @@ final class RezkaAuthorizationService {
         let cookies = cookieStorage.cookies ?? []
 
         return cookies.filter { cookie in
-            let isCurrentHostCookie = cookie.domain.contains(ConstantsApi.host)
+            let isCurrentHostCookie = cookieAppliesToCurrentHost(cookie)
             let isAuthCookie = K.authCookieNames.contains(cookie.name)
 
             if includeSessionCookie {
@@ -254,5 +256,53 @@ final class RezkaAuthorizationService {
 
             return isCurrentHostCookie && isAuthCookie
         }
+    }
+
+    private func syncHostWithAuthCookiesIfNeeded() {
+        guard ConstantsApi.hasCustomHost == false else {
+            return
+        }
+
+        let authCookies = (cookieStorage.cookies ?? [])
+            .filter { K.authCookieNames.contains($0.name) }
+
+        guard authCookies.isEmpty == false else {
+            return
+        }
+
+        if authCookies.contains(where: cookieAppliesToCurrentHost) {
+            return
+        }
+
+        let inferredHosts = authCookies.compactMap { cookie in
+            normalizedCookieHost(from: cookie.domain)
+        }
+
+        guard let inferredHost = inferredHosts.first,
+              inferredHosts.allSatisfy({ $0 == inferredHost }) else {
+            return
+        }
+
+        ConstantsApi.setHost(inferredHost)
+    }
+
+    private func cookieAppliesToCurrentHost(_ cookie: HTTPCookie) -> Bool {
+        cookieDomain(cookie.domain, appliesTo: ConstantsApi.host)
+    }
+
+    private func normalizedCookieHost(from rawDomain: String) -> String? {
+        let trimmedDomain = rawDomain
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .trimmingCharacters(in: CharacterSet(charactersIn: "."))
+
+        return ConstantsApi.normalizedHost(from: trimmedDomain)
+    }
+
+    private func cookieDomain(_ rawDomain: String, appliesTo host: String) -> Bool {
+        guard let normalizedDomain = normalizedCookieHost(from: rawDomain) else {
+            return false
+        }
+
+        return host == normalizedDomain || host.hasSuffix(".\(normalizedDomain)")
     }
 }

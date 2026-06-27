@@ -9,6 +9,11 @@ enum ConstantsApi {
 
     private static let hostStorageKey = "rezka.api.host"
 
+    static var hasCustomHost: Bool {
+        let storedHost = UserDefaults.standard.string(forKey: hostStorageKey) ?? ""
+        return normalizedHost(from: storedHost)?.isEmpty == false
+    }
+
     static var host: String {
         normalizedHost(from: UserDefaults.standard.string(forKey: hostStorageKey) ?? "") ?? defaultHost
     }

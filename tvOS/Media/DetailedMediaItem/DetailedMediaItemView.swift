@@ -52,6 +52,7 @@ struct DetailedMediaItemView: View {
     @StateObject private var bookmarkViewModel: MediaBookmarksViewModel
     
     @State private var isTranslationMenuPresented = false
+    @State private var isBookmarkFolderMenuPresented = false
     @State private var isSeasonsMenuPresented = false
     @State private var skipSeasonsMenuPresented = false
     @State private var isEpisodesMenuPresented = false
@@ -89,6 +90,23 @@ struct DetailedMediaItemView: View {
                 }
         }
         .overlay(overlayView)
+        .alert(
+            "Не удалось обновить закладки",
+            isPresented: Binding(
+                get: { bookmarkViewModel.actionErrorMessage != nil },
+                set: { isPresented in
+                    if isPresented == false {
+                        bookmarkViewModel.clearActionError()
+                    }
+                }
+            )
+        ) {
+            Button("OK", role: .cancel) {
+                bookmarkViewModel.clearActionError()
+            }
+        } message: {
+            Text(bookmarkViewModel.actionErrorMessage ?? "Попробуйте еще раз.")
+        }
         .alert(
             "Не удалось загрузить видео",
             isPresented: Binding(
@@ -212,15 +230,35 @@ struct DetailedMediaItemView: View {
     private var heroControlsPanel: some View {
         VStack(alignment: .leading, spacing: 20) {
             HStack(spacing: 12) {
-//                Button {
-//                    bookmarkViewModel.toggleBookmark(for: viewModel.media)
-//                } label: {
-//                    Image(systemName: bookmarkViewModel.isBookmarked(for: viewModel.media) ? "bookmark.fill" : "bookmark")
-//                }
-//                .buttonStyle(.glass)
-//                .buttonBorderShape(.circle)
-//                .controlSize(.small)
-//                .focused($focusedHeroControl, equals: .bookmark)
+                Button {
+                    Task {
+                        if bookmarkViewModel.folders.isEmpty {
+                            await bookmarkViewModel.load()
+                        }
+                        await bookmarkViewModel.refreshContainingFolders(for: viewModel.media)
+                        isBookmarkFolderMenuPresented = true
+                    }
+                } label: {
+                    Image(systemName: bookmarkViewModel.bookMarkIcon(for: viewModel.media))
+                        .symbolRenderingMode(.hierarchical)
+                        .foregroundStyle(bookmarkViewModel.isBookmarked(for: viewModel.media) ? .yellow : .white)
+                }
+                .buttonStyle(.glass)
+                .buttonBorderShape(.circle)
+                .controlSize(.small)
+                .overlay {
+                    if bookmarkViewModel.isBookmarked(for: viewModel.media) {
+                        Circle()
+                            .strokeBorder(.yellow.opacity(0.72), lineWidth: 2)
+                    }
+                }
+                .focused($focusedHeroControl, equals: .bookmark)
+                .onMoveLeftToProfileMenu(true, perform: onMoveLeftToProfileMenu)
+                .disabled(viewModel.mediaID == nil || bookmarkViewModel.isUpdating)
+                .alert("Папка закладок", isPresented: $isBookmarkFolderMenuPresented) {
+                    bookmarkFolderMenu
+                    cancelButton
+                }
                 
                 Button {
                     startPlaybackFromBeginning()
@@ -763,6 +801,27 @@ struct DetailedMediaItemView: View {
     
     private func selectQuality(id: Media.Quality) async {
       viewModel.setQuality(id)
+    }
+
+    @ViewBuilder
+    private var bookmarkFolderMenu: some View {
+        ForEach(bookmarkViewModel.folders) { folder in
+            let isSelected = bookmarkViewModel.isBookmarked(viewModel.media, in: folder)
+
+            Button {
+                guard let mediaID = viewModel.mediaID else { return }
+
+                Task {
+                    if isSelected {
+                        await bookmarkViewModel.removeBookmark(media: viewModel.media, mediaID: mediaID, from: folder.id)
+                    } else {
+                        await bookmarkViewModel.addBookmark(media: viewModel.media, mediaID: mediaID, to: folder.id)
+                    }
+                }
+            } label: {
+                Text(isSelected ? "\(selectionIcon)  \(folder.name)" : folder.name)
+            }
+        }
     }
     
     @ViewBuilder

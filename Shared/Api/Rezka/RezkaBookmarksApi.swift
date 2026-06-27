@@ -25,81 +25,28 @@ struct RezkaBookmarksApi {
 
     func createFolder(named name: String) async throws {
         try await performMutation(
-            bodies: [
-                [
-                    URLQueryItem(name: "action", value: "create_folder"),
-                    URLQueryItem(name: "name", value: name)
-                ],
-                [
-                    URLQueryItem(name: "action", value: "create_category"),
-                    URLQueryItem(name: "title", value: name)
-                ],
-                [
-                    URLQueryItem(name: "action", value: "add_category"),
-                    URLQueryItem(name: "name", value: name)
-                ],
-                [
-                    URLQueryItem(name: "action", value: "create"),
-                    URLQueryItem(name: "name", value: name)
-                ]
+            body: [
+                URLQueryItem(name: "name", value: name),
+                URLQueryItem(name: "action", value: "add_cat")
             ]
         )
     }
 
     func addBookmark(mediaID: Int, folderID: String) async throws {
         try await performMutation(
-            bodies: [
-                [
-                    URLQueryItem(name: "action", value: "add"),
-                    URLQueryItem(name: "post_id", value: "\(mediaID)"),
-                    URLQueryItem(name: "folder_id", value: folderID)
-                ],
-                [
-                    URLQueryItem(name: "action", value: "add"),
-                    URLQueryItem(name: "id", value: "\(mediaID)"),
-                    URLQueryItem(name: "fav_id", value: folderID)
-                ],
-                [
-                    URLQueryItem(name: "action", value: "add_favorite"),
-                    URLQueryItem(name: "post_id", value: "\(mediaID)"),
-                    URLQueryItem(name: "category_id", value: folderID)
-                ],
-                [
-                    URLQueryItem(name: "action", value: "add_to_favorites"),
-                    URLQueryItem(name: "id", value: "\(mediaID)"),
-                    URLQueryItem(name: "section_id", value: folderID)
-                ]
-            ]
+            body: bookmarkMutationBody(mediaID: mediaID, folderID: folderID)
         )
     }
 
     func removeBookmark(mediaID: Int, folderID: String?) async throws {
-        var bodies: [[URLQueryItem]] = [
-            [
-                URLQueryItem(name: "action", value: "remove"),
-                URLQueryItem(name: "post_id", value: "\(mediaID)")
-            ],
-            [
-                URLQueryItem(name: "action", value: "delete"),
-                URLQueryItem(name: "id", value: "\(mediaID)")
-            ],
-            [
-                URLQueryItem(name: "action", value: "remove_favorite"),
-                URLQueryItem(name: "post_id", value: "\(mediaID)")
-            ]
-        ]
-
-        if let folderID {
-            bodies = bodies.map { body in
-                body + [
-                    URLQueryItem(name: "folder_id", value: folderID),
-                    URLQueryItem(name: "fav_id", value: folderID),
-                    URLQueryItem(name: "section_id", value: folderID)
-                ]
-            }
+        guard let folderID else {
+            throw DataError.generate(for: .rezkaConstantsApi, error: .bad)
         }
 
-        try await performMutation(bodies: bodies)
+        // Rezka toggles membership in a folder with the same add_post action.
+        try await performMutation(
+            body: bookmarkMutationBody(mediaID: mediaID, folderID: folderID)
+        )
     }
 
     private func fetchBookmarksPage(url: URL, folderID: String?) async throws -> BookmarkLibrary {
@@ -125,22 +72,12 @@ struct RezkaBookmarksApi {
         }
     }
 
-    private func performMutation(bodies: [[URLQueryItem]]) async throws {
-        var lastError: Error?
+    private func performMutation(body: [URLQueryItem]) async throws {
+        let success = try await performMutation(url: mutationURL, body: body)
 
-        for url in mutationURLs {
-            for body in bodies {
-                do {
-                    if try await performMutation(url: url, body: body) {
-                        return
-                    }
-                } catch {
-                    lastError = error
-                }
-            }
+        guard success else {
+            throw DataError.generate(for: .rezkaConstantsApi, error: .server)
         }
-
-        throw lastError ?? DataError.generate(for: .rezkaConstantsApi, error: .server)
     }
 
     private func performMutation(url: URL, body: [URLQueryItem]) async throws -> Bool {
@@ -155,11 +92,12 @@ struct RezkaBookmarksApi {
             throw DataError.generate(for: .rezkaConstantsApi, error: .bad)
         }
 
+        let text = String(decoding: data, as: UTF8.self)
+
         guard (200...299).contains(response.statusCode) else {
             return false
         }
 
-        let text = String(decoding: data, as: UTF8.self)
         guard text.isRezkaLoginPage == false else {
             throw DataError.generate(for: .rezkaConstantsApi, error: .authorization)
         }
@@ -194,16 +132,21 @@ struct RezkaBookmarksApi {
         case .post:
             request.setValue(ApiConstants.AcceptTypeJson, forHTTPHeaderField: ApiConstants.AcceptTypeKey)
             request.setValue(ApiConstants.formContentType, forHTTPHeaderField: ApiConstants.contentTypeKey)
+            request.setValue("XMLHttpRequest", forHTTPHeaderField: "X-Requested-With")
         }
 
         return request
     }
 
-    private var mutationURLs: [URL] {
+    private func bookmarkMutationBody(mediaID: Int, folderID: String) -> [URLQueryItem] {
         [
-            "\(ConstantsApi.server)/ajax/favorites/",
-            "\(ConstantsApi.server)/ajax/favorites.php",
-            "\(ConstantsApi.server)/engine/ajax/favorites.php"
-        ].compactMap(URL.init(string:))
+            URLQueryItem(name: "post_id", value: "\(mediaID)"),
+            URLQueryItem(name: "cat_id", value: folderID),
+            URLQueryItem(name: "action", value: "add_post")
+        ]
+    }
+
+    private var mutationURL: URL {
+        URL(string: "\(ConstantsApi.server)/ajax/favorites/")!
     }
 }

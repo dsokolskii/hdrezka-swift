@@ -166,8 +166,10 @@ final class MediaBookmarksViewModel: ObservableObject {
     func addBookmark(media: Media, mediaID: Int, to folderID: String) async {
         await update {
             try await api.addBookmark(mediaID: mediaID, folderID: folderID)
-            try await refreshAfterMutation()
             setMembership(for: media.url, folderID: folderID, isContained: true)
+            updateMedia(media, in: folderID, isContained: true)
+            updateBookmarkCount(in: folderID, delta: 1)
+            await refreshAfterMutationIfPossible()
         }
     }
 
@@ -181,8 +183,10 @@ final class MediaBookmarksViewModel: ObservableObject {
     func removeBookmark(media: Media, mediaID: Int, from folderID: String) async {
         await update {
             try await api.removeBookmark(mediaID: mediaID, folderID: folderID)
-            try await refreshAfterMutation()
             setMembership(for: media.url, folderID: folderID, isContained: false)
+            updateMedia(media, in: folderID, isContained: false)
+            updateBookmarkCount(in: folderID, delta: -1)
+            await refreshAfterMutationIfPossible()
         }
     }
 
@@ -214,7 +218,7 @@ final class MediaBookmarksViewModel: ObservableObject {
         bookmarkFolderIDsByMediaURL = membership
         rebuildIndex()
 
-        if let lastError {
+        if let lastError, containingFolderIDs.isEmpty {
             actionErrorMessage = lastError.localizedDescription
         }
     }
@@ -242,6 +246,14 @@ final class MediaBookmarksViewModel: ObservableObject {
         bookmarks = library.medias
         rebuildIndex()
         phase = .success(library)
+    }
+
+    private func refreshAfterMutationIfPossible() async {
+        do {
+            try await refreshAfterMutation()
+        } catch {
+            phase = .success(BookmarkLibrary(folders: folders, medias: bookmarks))
+        }
     }
 
     private func rebuildIndex() {
@@ -287,6 +299,52 @@ final class MediaBookmarksViewModel: ObservableObject {
                 medias: loadedMediasByFolderID[folder.id] ?? folder.medias
             )
         }
+    }
+
+    private func updateBookmarkCount(in folderID: String, delta: Int) {
+        guard let index = folders.firstIndex(where: { $0.id == folderID }) else {
+            return
+        }
+
+        let folder = folders[index]
+        folders[index] = BookmarkFolder(
+            id: folder.id,
+            name: folder.name,
+            count: max(0, folder.count + delta),
+            url: folder.url,
+            medias: folder.medias
+        )
+    }
+
+    private func updateMedia(_ media: Media, in folderID: String, isContained: Bool) {
+        guard let index = folders.firstIndex(where: { $0.id == folderID }) else {
+            return
+        }
+
+        var medias = folders[index].medias
+
+        if isContained {
+            if medias.contains(where: { $0.url == media.url }) == false {
+                medias.insert(media, at: 0)
+            }
+        } else {
+            medias.removeAll { $0.url == media.url }
+        }
+
+        folders[index] = BookmarkFolder(
+            id: folders[index].id,
+            name: folders[index].name,
+            count: folders[index].count,
+            url: folders[index].url,
+            medias: medias
+        )
+
+        if selectedFolderID == folderID {
+            bookmarks = medias
+        }
+
+        rebuildIndex()
+        phase = .success(BookmarkLibrary(folders: folders, medias: bookmarks))
     }
 
     private func updateMedias(_ medias: [Media], in folderID: String) {
