@@ -236,6 +236,7 @@ struct MacMediaContentView: View {
                         Label("Открыть", systemImage: "play.fill")
                     }
                     .buttonStyle(.borderedProminent)
+                    .tint(AppTheme.accent)
                     .controlSize(.large)
                 }
 

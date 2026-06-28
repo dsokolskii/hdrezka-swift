@@ -52,8 +52,9 @@ struct PlatformAppView: View {
                 }
                 .screenBackground()
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .frame(minWidth: 960, minHeight: 600)
+        .frame(minWidth: 960, maxWidth: .infinity, minHeight: 600, maxHeight: .infinity)
         .background(MacWindowConfigurator())
         .ignoresSafeArea(.container, edges: .top)
         .onFirstAppear {
@@ -351,6 +352,7 @@ private struct MacAuthorizationView: View {
                         .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
+                    .tint(AppTheme.accent)
                     .controlSize(.large)
                     .disabled(authorizationViewModel.isLoading)
                 }
@@ -390,48 +392,93 @@ private struct MacSettingsView: View {
                     subtitle: "Нативная панель для зеркала и быстрой смены аккаунта."
                 )
 
-                GroupBox("Зеркало") {
-                    VStack(alignment: .leading, spacing: 14) {
-                        TextField(ConstantsApi.defaultHost, text: $mirror)
-                            .autocorrectionDisabled()
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-
-                        HStack(spacing: 12) {
-                            Button("Сохранить", action: saveMirror)
-                                .buttonStyle(.borderedProminent)
-
-                            Button("Сбросить", action: resetMirror)
-                                .buttonStyle(.bordered)
-                        }
-
-                        Text("По умолчанию: \(ConstantsApi.defaultHost)")
-                            .font(.callout)
-                            .foregroundStyle(.secondary)
-
-                        if let statusMessage {
-                            Text(statusMessage)
-                                .font(.callout.weight(.medium))
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                }
-
-                GroupBox("Аккаунт") {
-                    Button(role: .destructive) {
-                        authorizationViewModel.logout()
-                        dismiss()
-                    } label: {
-                        Label("Выйти из аккаунта", systemImage: "rectangle.portrait.and.arrow.right")
-                    }
-                    .buttonStyle(.bordered)
-                }
+                mirrorPanel
+                accountPanel
             }
-            .frame(maxWidth: 760, alignment: .leading)
-            .padding(.horizontal, AppTheme.pagePadding)
-            .padding(.vertical, 32)
+            .frame(width: 620, alignment: .leading)
+            .padding(.horizontal, 36)
+            .padding(.top, 34)
+            .padding(.bottom, 56)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .screenBackground()
+    }
+
+    private var mirrorPanel: some View {
+        SettingsPanel {
+            VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Зеркало")
+                        .font(.headline.weight(.semibold))
+                        .foregroundStyle(.white)
+
+                    Text("Адрес активного зеркала HDRezka.")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                }
+
+                TextField(ConstantsApi.defaultHost, text: $mirror)
+                    .autocorrectionDisabled()
+                    .textFieldStyle(.plain)
+                    .font(.system(size: 14, weight: .medium))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 9)
+                    .background(.black.opacity(0.22), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .strokeBorder(AppTheme.hairline.opacity(0.6), lineWidth: 1)
+                    }
+
+                HStack(spacing: 10) {
+                    Button("Сохранить", action: saveMirror)
+                        .buttonStyle(.borderedProminent)
+                        .tint(AppTheme.accent)
+
+                    Button("Сбросить", action: resetMirror)
+                        .buttonStyle(.bordered)
+
+                    Spacer(minLength: 0)
+                }
+
+                HStack(spacing: 8) {
+                    Text("По умолчанию: \(ConstantsApi.defaultHost)")
+
+                    if let statusMessage {
+                        Text(statusMessage)
+                            .fontWeight(.semibold)
+                    }
+                }
+                .font(.callout)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+            }
+        }
+    }
+
+    private var accountPanel: some View {
+        SettingsPanel {
+            HStack(alignment: .center, spacing: 18) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Аккаунт")
+                        .font(.headline.weight(.semibold))
+                        .foregroundStyle(.white)
+
+                    Text("Смена профиля и выход из текущей сессии.")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer(minLength: 0)
+
+                Button(role: .destructive) {
+                    authorizationViewModel.logout()
+                    dismiss()
+                } label: {
+                    Label("Выйти", systemImage: "rectangle.portrait.and.arrow.right")
+                }
+                .buttonStyle(.bordered)
+            }
+        }
     }
 
     private func saveMirror() {
@@ -463,6 +510,25 @@ private struct MacSettingsView: View {
         } else {
             statusMessage = "Используется зеркало по умолчанию"
         }
+    }
+}
+
+private struct SettingsPanel<Content: View>: View {
+    let content: Content
+
+    init(@ViewBuilder content: () -> Content) {
+        self.content = content()
+    }
+
+    var body: some View {
+        content
+            .padding(18)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(AppTheme.panel, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .strokeBorder(AppTheme.hairline.opacity(0.45), lineWidth: 1)
+            }
     }
 }
 
